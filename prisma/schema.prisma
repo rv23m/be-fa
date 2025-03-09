@@ -1,0 +1,154 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model tenant {
+  id              String           @id @default(auto()) @map("_id") @db.ObjectId
+  name            String           @unique
+  slug            String           @unique
+  is_deleted      Boolean?         @default(false)
+  seats           Int
+  users           user[]
+  personas        persona[]
+  role_play_calls role_play_call[]
+  created_at      DateTime         @default(now())
+  updated_at      DateTime         @updatedAt
+}
+
+model role {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  name       String   @unique
+  users      user[]
+  is_deleted Boolean? @default(false)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+}
+
+model user {
+  id              String           @id @default(auto()) @map("_id") @db.ObjectId
+  tenant_id       String           @db.ObjectId
+  tenant          tenant           @relation(fields: [tenant_id], references: [id])
+  first_name      String
+  last_name       String
+  email           String           @unique
+  password        String
+  role_id         String           @db.ObjectId
+  role            role             @relation(fields: [role_id], references: [id])
+  is_deleted      Boolean?         @default(false)
+  is_frozen       Boolean?         @default(false)
+  created_at      DateTime         @default(now())
+  updated_at      DateTime         @updatedAt
+  role_play_calls role_play_call[]
+}
+
+model persona_job {
+  id         String    @id @default(auto()) @map("_id") @db.ObjectId
+  title      String
+  prompt_job String
+  personas   persona[]
+  is_deleted Boolean?  @default(false)
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+}
+
+model persona_industry {
+  id              String    @id @default(auto()) @map("_id") @db.ObjectId
+  industry        String
+  prompt_industry String
+  personas        persona[]
+  is_deleted      Boolean?  @default(false)
+  created_at      DateTime  @default(now())
+  updated_at      DateTime  @updatedAt
+}
+
+model persona_objection {
+  id               String    @id @default(auto()) @map("_id") @db.ObjectId
+  objection        String
+  prompt_objection String
+  personas         persona[]
+  is_deleted       Boolean?  @default(false)
+  created_at       DateTime  @default(now())
+  updated_at       DateTime  @updatedAt
+}
+
+model persona_name {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  prompt_name String
+  personas    persona[]
+  is_deleted  Boolean?  @default(false)
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+}
+
+model persona {
+  id        String @id @default(auto()) @map("_id") @db.ObjectId
+  tenant_id String @db.ObjectId
+  tenant    tenant @relation(fields: [tenant_id], references: [id])
+
+  job_id String      @db.ObjectId
+  job    persona_job @relation(fields: [job_id], references: [id])
+
+  industry_id String           @db.ObjectId
+  industry    persona_industry @relation(fields: [industry_id], references: [id])
+
+  objection_id String            @db.ObjectId
+  objection    persona_objection @relation(fields: [objection_id], references: [id])
+
+  name_id String       @db.ObjectId
+  name    persona_name @relation(fields: [name_id], references: [id])
+
+  is_deleted      Boolean?         @default(false)
+  role_play_calls role_play_call[]
+  created_at      DateTime         @default(now())
+  updated_at      DateTime         @updatedAt
+}
+
+model call_type {
+  id              String           @id @default(auto()) @map("_id") @db.ObjectId
+  name            String
+  prompt_name     String
+  role_play_calls role_play_call[]
+  is_deleted      Boolean?         @default(false)
+  created_at      DateTime         @default(now())
+  updated_at      DateTime         @updatedAt
+}
+
+model role_play_call {
+  id         String @id @default(auto()) @map("_id") @db.ObjectId
+  session_id String @unique
+
+  tenant_id  String   @db.ObjectId
+  tenant     tenant   @relation(fields: [tenant_id], references: [id])
+  is_deleted Boolean? @default(false)
+
+  user_id    String  @db.ObjectId
+  user       user    @relation(fields: [user_id], references: [id])
+  persona_id String  @db.ObjectId
+  persona    persona @relation(fields: [persona_id], references: [id])
+
+  call_start_time DateTime?
+  call_end_time   DateTime?
+
+  call_type_id String    @db.ObjectId
+  call_type    call_type @relation(fields: [call_type_id], references: [id])
+
+  listen_to_talk_ratio Float? // %
+  objection_resolution Float? // %
+  close_rate           Boolean? // true = closed, false = not closed
+
+  transcript Json? @default("[]")
+
+  session_closed      Boolean? @default(false)
+  session_closed_info String?
+  cleaned_transcript  String?
+  created_at          DateTime @default(now())
+  updated_at          DateTime @updatedAt
+
+  @@map("role_play_call")
+}

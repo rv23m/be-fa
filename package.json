@@ -1,0 +1,50 @@
+{
+  "name": "DaiL-Repo",
+  "version": "1.0.0",
+  "description": "",
+  "type": "module",
+  "scripts": {
+    "start:dev": "nodemon src/server.js",
+    "start": "node src/server.js",
+    "seed:basic": "node scripts/seed/seed.js",
+    "seed:persona": "node scripts/seed/seed_persona.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@fastify/circuit-breaker": "^4.0.2",
+    "@fastify/compress": "^8.0.1",
+    "@fastify/cookie": "^11.0.2",
+    "@fastify/cors": "^10.0.2",
+    "@fastify/csrf-protection": "^7.0.2",
+    "@fastify/diagnostics-channel": "^5.0.1",
+    "@fastify/env": "^5.0.2",
+    "@fastify/express": "^4.0.2",
+    "@fastify/formbody": "^8.0.2",
+    "@fastify/helmet": "^13.0.1",
+    "@fastify/jwt": "^9.0.3",
+    "@fastify/mongodb": "^9.0.2",
+    "@fastify/multipart": "^9.0.3",
+    "@fastify/rate-limit": "^10.2.2",
+    "@fastify/routes": "^6.0.2",
+    "@fastify/routes-stats": "^4.0.2",
+    "@fastify/swagger": "^9.4.2",
+    "@fastify/swagger-ui": "^5.2.1",
+    "@fastify/url-data": "^6.0.3",
+    "@prisma/client": "^6.3.1",
+    "axios": "^1.7.9",
+    "fastify": "^5.2.1",
+    "fastify-plugin": "^5.0.1",
+    "fastify-type-provider-zod": "^4.0.2",
+    "openai": "^4.82.0",
+    "uuid": "^11.1.0",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@fastify/autoload": "^6.1.0",
+    "fastify-cli": "^7.3.0",
+    "nodemon": "^3.1.9",
+    "prisma": "^6.3.1"
+  }
+}
