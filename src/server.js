@@ -20,6 +20,7 @@ import fastifyRoutes from "@fastify/routes";
 import fastifyRoutesStats from "@fastify/routes-stats";
 import fastifyCircuitBreaker from "@fastify/circuit-breaker";
 import fastifyExpress from "@fastify/express";
+import serverless from "serverless-http";
 import { z } from "zod";
 import { dirname, join } from "path";
 import { fileURLToPath } from "url";
@@ -209,3 +210,5 @@ fastify.listen({ port: 4000, host: "0.0.0.0" }, function (err, address) {
     process.exit(1);
   }
 });
+
+module.exports = serverless(fastify);
