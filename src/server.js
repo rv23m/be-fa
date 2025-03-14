@@ -211,4 +211,8 @@ fastify.listen({ port: 4000, host: "0.0.0.0" }, function (err, address) {
   }
 });
 
-export default serverless(fastify);
+// export default serverless(fastify);
+export default async function handler(req, res) {
+  await fastify.ready();
+  fastify.server.emit("request", req, res);
+}
