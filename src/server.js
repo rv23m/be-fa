@@ -211,4 +211,4 @@ fastify.listen({ port: 4000, host: "0.0.0.0" }, function (err, address) {
   }
 });
 
-module.exports = serverless(fastify);
+export default serverless(fastify);
