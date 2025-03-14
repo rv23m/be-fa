@@ -150,5 +150,9 @@ model role_play_call {
   created_at          DateTime @default(now())
   updated_at          DateTime @updatedAt
 
+  // @@index([session_id])
+  @@index([user_id])
+  @@index([tenant_id])
+  @@index([created_at])
   @@map("role_play_call")
 }

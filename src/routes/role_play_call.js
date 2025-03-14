@@ -193,6 +193,8 @@ async function routes(fastify, options) {
   fastify.post(
     `/${ROUTE_LEVEL_IDENTIFIER}/session/talk/:id`,
     async (request, reply) => {
+      console.time("total");
+
       const { id } = request.params; // Extract the `id` from the URL
 
       const userMessage = request?.body?.userMessage;
@@ -208,13 +210,13 @@ async function routes(fastify, options) {
       try {
         // Send request to OpenAI API with Taylor Morgan's role and user's message
         // OpenAI API call
-
+        console.time("rolePlayCall");
         const rolePlayCall =
           await ROLE_PLAY_CALL_SERVICES.fetchRecentRolePlayCallBySession({
             request,
             session_id: id,
           });
-
+        console.timeEnd("rolePlayCall");
         if (rolePlayCall?.session_closed) {
           ResponseFormat[200]({
             reply,
@@ -231,8 +233,8 @@ async function routes(fastify, options) {
           created_at: new Date().toISOString(),
         };
 
-        console.log("##", rolePlayCall?.transcript);
-
+        // console.log("##", rolePlayCall?.transcript);
+        console.time("OpenAI API Call");
         const response = await openai.chat.completions.create({
           model: "gpt-4-turbo",
           messages: [...(rolePlayCall?.transcript || []), newChat],
@@ -242,13 +244,14 @@ async function routes(fastify, options) {
           frequency_penalty: 0,
           presence_penalty: 0,
         });
-        console.log("##", response);
+        console.timeEnd("OpenAI API Call");
+        // console.log("##", response);
 
         const newChatResponse = {
           ...response.choices[0].message,
           created_at: new Date().toISOString(),
         };
-
+        console.time("updatedRolePlayCall");
         const updatedRolePlayCall =
           await ROLE_PLAY_CALL_SERVICES.updateRolePlayCallBySession({
             request,
@@ -261,6 +264,7 @@ async function routes(fastify, options) {
               ],
             },
           });
+        console.timeEnd("updatedRolePlayCall");
 
         ResponseFormat[200]({
           reply,
@@ -268,6 +272,8 @@ async function routes(fastify, options) {
             talk_transaction: updatedRolePlayCall?.transcript?.pop(),
           },
         });
+        console.timeEnd("total");
+
         return reply;
       } catch (error) {
         console.error("Error with OpenAI API:", error?.message, error);
