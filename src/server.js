@@ -147,10 +147,6 @@ await fastify.register(fastifyExpress);
 //   }
 // );
 
-// const OPENAI_API_KEY =
-//   "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";
-// const OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
-
 // const rolePlayPrompt =
 //   "You are role playing as a potential sales lead that is being sold a product. Here are some instructions: - Do not narrate what you are doing - Your name is Taylor- Your role is [CEO] - Your industry is [Design]- Your objection is [Budget Concerns]";
 
