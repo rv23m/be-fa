@@ -147,50 +147,50 @@ await fastify.register(fastifyExpress);
 //   }
 // );
 
-const OPENAI_API_KEY =
-  "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";
-const OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
+// const OPENAI_API_KEY =
+//   "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";
+// const OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
 
-const rolePlayPrompt =
-  "You are role playing as a potential sales lead that is being sold a product. Here are some instructions: - Do not narrate what you are doing - Your name is Taylor- Your role is [CEO] - Your industry is [Design]- Your objection is [Budget Concerns]";
+// const rolePlayPrompt =
+//   "You are role playing as a potential sales lead that is being sold a product. Here are some instructions: - Do not narrate what you are doing - Your name is Taylor- Your role is [CEO] - Your industry is [Design]- Your objection is [Budget Concerns]";
 
-const openai = new OpenAI({
-  apiKey: OPENAI_API_KEY, // Load API key from .env
-});
+// const openai = new OpenAI({
+//   apiKey: OPENAI_API_KEY, // Load API key from .env
+// });
 
-fastify.post("/sales-training", async (request, reply) => {
-  const { userMessage } = request.body;
+// fastify.post("/sales-training", async (request, reply) => {
+//   const { userMessage } = request.body;
 
-  if (!userMessage) {
-    return reply.status(400).send({ error: "Message is required." });
-  }
+//   if (!userMessage) {
+//     return reply.status(400).send({ error: "Message is required." });
+//   }
 
-  try {
-    // Send request to OpenAI API with Taylor Morgan's role and user's message
-    // OpenAI API call
-    const response = await openai.chat.completions.create({
-      model: "gpt-4-turbo",
-      messages: [
-        {
-          role: "system",
-          content: rolePlayPrompt,
-        },
-        { role: "user", content: userMessage },
-      ],
-      temperature: 1,
-      max_tokens: 2048,
-      top_p: 1,
-      frequency_penalty: 0,
-      presence_penalty: 0,
-    });
+//   try {
+//     // Send request to OpenAI API with Taylor Morgan's role and user's message
+//     // OpenAI API call
+//     const response = await openai.chat.completions.create({
+//       model: "gpt-4-turbo",
+//       messages: [
+//         {
+//           role: "system",
+//           content: rolePlayPrompt,
+//         },
+//         { role: "user", content: userMessage },
+//       ],
+//       temperature: 1,
+//       max_tokens: 2048,
+//       top_p: 1,
+//       frequency_penalty: 0,
+//       presence_penalty: 0,
+//     });
 
-    // Send back the response
-    reply.send({ message: response.choices[0].message.content, response });
-  } catch (error) {
-    console.error("Error with OpenAI API:", error?.message, error);
-    return reply.status(500).send({ error: "Internal server error." });
-  }
-});
+//     // Send back the response
+//     reply.send({ message: response.choices[0].message.content, response });
+//   } catch (error) {
+//     console.error("Error with OpenAI API:", error?.message, error);
+//     return reply.status(500).send({ error: "Internal server error." });
+//   }
+// });
 
 await fastify.register(autoLoad, {
   dir: join(__dirname, "plugins"),
