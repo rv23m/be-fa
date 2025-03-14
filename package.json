@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "start:dev": "nodemon src/server.js",
+    "build": "npx prisma generate",
     "start": "node src/server.js",
     "seed:basic": "node scripts/seed/seed.js",
     "seed:persona": "node scripts/seed/seed_persona.js"
