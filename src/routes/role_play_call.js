@@ -289,8 +289,6 @@ async function routes(fastify, options) {
   fastify.post(
     `/${ROUTE_LEVEL_IDENTIFIER}/session/talk/v2/:id`,
     async (request, reply) => {
-      console.time("total");
-
       const { id } = request.params;
       const userMessage = request?.body?.userMessage;
 
