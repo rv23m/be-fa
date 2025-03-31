@@ -59,7 +59,7 @@ await fastify.register(fastifyJWT, { secret: process.env.JWT_SECRET });
 await fastify.register(fastifyCompress, { global: true });
 await fastify.register(fastifyHelmet);
 await fastify.register(fastifyCookie);
-await fastify.register(fastifyCors);
+await fastify.register(fastifyCors, { origin: "*" });
 await fastify.register(fastifyFormbody);
 await fastify.register(fastifyMultipart);
 await fastify.register(fastifyRateLimit, { max: 100, timeWindow: "1 minute" });
