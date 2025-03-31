@@ -286,6 +286,82 @@ async function routes(fastify, options) {
     }
   );
 
+  fastify.post(
+    `/${ROUTE_LEVEL_IDENTIFIER}/session/talk/v2/:id`,
+    async (request, reply) => {
+      console.time("total");
+
+      const { id } = request.params;
+      const userMessage = request?.body?.userMessage;
+
+      if (!userMessage) {
+        ResponseFormat[400]({ reply, message: "Message is required." });
+        return reply;
+      }
+
+      try {
+        const rolePlayCall =
+          await ROLE_PLAY_CALL_SERVICES.fetchRecentRolePlayCallBySession({
+            request,
+            session_id: id,
+          });
+
+        if (!rolePlayCall || rolePlayCall?.session_closed) {
+          ResponseFormat[200]({
+            reply,
+            data: { talk_transaction: "The call has already ended" },
+          });
+          return reply;
+        }
+
+        const newChat = {
+          role: "user",
+          content: userMessage,
+          created_at: new Date().toISOString(),
+        };
+
+        reply.raw.setHeader("Content-Type", "text/event-stream");
+        reply.raw.setHeader("Cache-Control", "no-cache");
+        reply.raw.setHeader("Connection", "keep-alive");
+
+        const openaiStream = await openai.chat.completions.create({
+          model: "gpt-4-turbo",
+          messages: [...(rolePlayCall?.transcript || []), newChat],
+          temperature: 1,
+          max_tokens: 2048,
+          stream: true, // Enable streaming
+        });
+
+        let fullMessage = "";
+        for await (const chunk of openaiStream) {
+          const token = chunk.choices?.[0]?.delta?.content || "";
+          fullMessage += token;
+          reply.raw.write(token);
+        }
+
+        const newChatResponse = {
+          role: "assistant",
+          content: fullMessage,
+          created_at: new Date().toISOString(),
+        };
+
+        await ROLE_PLAY_CALL_SERVICES.updateRolePlayCallBySession({
+          request,
+          session_id: id,
+          data: {
+            transcript: [...rolePlayCall?.transcript, newChat, newChatResponse],
+          },
+        });
+
+        reply.raw.end();
+      } catch (error) {
+        console.error("Error:", error);
+        reply.raw.write("Error occurred");
+        reply.raw.end();
+      }
+    }
+  );
+
   const formatTranscript = ({ transcript, username, aiPersonaName }) => {
     return (
       `**human is ${username}**
