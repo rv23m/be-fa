@@ -318,6 +318,16 @@ async function routes(fastify, options) {
           created_at: new Date().toISOString(),
         };
 
+        reply
+          .header("Content-Type", "text/event-stream")
+          .header("Cache-Control", "no-cache")
+          .header("Connection", "keep-alive")
+          .header("Access-Control-Allow-Origin", "*") // 🔥 Allow CORS
+          .header("Access-Control-Allow-Methods", "POST, OPTIONS") // 🔥 Allow POST
+          .header(
+            "Access-Control-Allow-Headers",
+            "Content-Type, Authorization"
+          ); // 🔥 Allow Headers
         reply.raw.setHeader("Content-Type", "text/event-stream");
         reply.raw.setHeader("Cache-Control", "no-cache");
         reply.raw.setHeader("Connection", "keep-alive");
