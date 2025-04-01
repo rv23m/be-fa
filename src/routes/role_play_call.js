@@ -287,15 +287,14 @@ async function routes(fastify, options) {
   );
 
   fastify.options(
-    `/${ROUTE_LEVEL_IDENTIFIER}/session/talk/v2/:id`,
+    "/api/v1/role-play-call/session/talk/v2/:id",
     (request, reply) => {
       reply
         .header("Access-Control-Allow-Origin", "*")
-        .header("Access-Control-Allow-Credentials", "true")
         .header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
         .header("Access-Control-Allow-Headers", "Content-Type, Authorization")
-        .header("Access-Control-Expose-Headers", "Content-Type")
-        .status(204) // No content for OPTIONS response
+        .header("Access-Control-Allow-Credentials", "true")
+        .status(204)
         .send();
     }
   );
@@ -333,13 +332,13 @@ async function routes(fastify, options) {
           created_at: new Date().toISOString(),
         };
 
-        reply
-          .header("Access-Control-Allow-Origin", "*") // 🔥 Allow CORS
-          .header("Access-Control-Allow-Credentials", "true") // 🔥 Allow credentials
-          .header("Access-Control-Expose-Headers", "Content-Type") // 🔥 Expose headers
-          .header("Content-Type", "text/event-stream")
-          .header("Cache-Control", "no-cache")
-          .header("Connection", "keep-alive");
+        // reply
+        //   .header("Access-Control-Allow-Origin", "*") // 🔥 Allow CORS
+        //   .header("Access-Control-Allow-Credentials", "true") // 🔥 Allow credentials
+        //   .header("Access-Control-Expose-Headers", "Content-Type") // 🔥 Expose headers
+        //   .header("Content-Type", "text/event-stream")
+        //   .header("Cache-Control", "no-cache")
+        //   .header("Connection", "keep-alive");
 
         const openaiStream = await openai.chat.completions.create({
           model: "gpt-4-turbo",
