@@ -286,7 +286,7 @@ async function routes(fastify, options) {
     }
   );
 
-  fastify.post(
+  fastify.get(
     `/${ROUTE_LEVEL_IDENTIFIER}/session/talk/v2/:id`,
     async (request, reply) => {
       const { id } = request.params;
