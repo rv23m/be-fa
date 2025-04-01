@@ -286,12 +286,11 @@ async function routes(fastify, options) {
     }
   );
 
-  fastify.get(
+  fastify.post(
     `/${ROUTE_LEVEL_IDENTIFIER}/session/talk/v2/:id`,
     async (request, reply) => {
       const { id } = request.params;
-      // const userMessage = request?.body?.userMessage;
-      const userMessage = request.query.message;
+      const userMessage = request?.body?.userMessage;
       console.log("userMessage ##", userMessage);
 
       if (!userMessage) {

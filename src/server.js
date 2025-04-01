@@ -60,8 +60,11 @@ await fastify.register(fastifyCompress, { global: true });
 await fastify.register(fastifyHelmet);
 await fastify.register(fastifyCookie);
 await fastify.register(fastifyCors, {
-  origin: "*",
+  origin: "*", // Change this to your frontend URL for security
   methods: ["GET", "POST", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true, // ✅ Allow credentials (important for streaming)
+  exposedHeaders: ["Content-Type", "Authorization"], // ✅ Expose required headers
 });
 await fastify.register(fastifyFormbody);
 await fastify.register(fastifyMultipart);
