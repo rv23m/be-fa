@@ -286,6 +286,20 @@ async function routes(fastify, options) {
     }
   );
 
+  fastify.options(
+    `/${ROUTE_LEVEL_IDENTIFIER}/session/talk/v2/:id`,
+    (request, reply) => {
+      reply
+        .header("Access-Control-Allow-Origin", "*")
+        .header("Access-Control-Allow-Credentials", "true")
+        .header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+        .header("Access-Control-Allow-Headers", "Content-Type, Authorization")
+        .header("Access-Control-Expose-Headers", "Content-Type")
+        .status(204) // No content for OPTIONS response
+        .send();
+    }
+  );
+
   fastify.post(
     `/${ROUTE_LEVEL_IDENTIFIER}/session/talk/v2/:id`,
     async (request, reply) => {
