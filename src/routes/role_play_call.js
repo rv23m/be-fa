@@ -320,18 +320,12 @@ async function routes(fastify, options) {
         };
 
         reply
+          .header("Access-Control-Allow-Origin", "*") // 🔥 Allow CORS
+          .header("Access-Control-Allow-Credentials", "true") // 🔥 Allow credentials
+          .header("Access-Control-Expose-Headers", "Content-Type") // 🔥 Expose headers
           .header("Content-Type", "text/event-stream")
           .header("Cache-Control", "no-cache")
-          .header("Connection", "keep-alive")
-          .header("Access-Control-Allow-Origin", "*") // 🔥 Allow CORS
-          .header("Access-Control-Allow-Methods", "POST, OPTIONS") // 🔥 Allow POST
-          .header(
-            "Access-Control-Allow-Headers",
-            "Content-Type, Authorization"
-          ); // 🔥 Allow Headers
-        reply.raw.setHeader("Content-Type", "text/event-stream");
-        reply.raw.setHeader("Cache-Control", "no-cache");
-        reply.raw.setHeader("Connection", "keep-alive");
+          .header("Connection", "keep-alive");
 
         const openaiStream = await openai.chat.completions.create({
           model: "gpt-4-turbo",
