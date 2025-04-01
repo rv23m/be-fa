@@ -291,6 +291,7 @@ async function routes(fastify, options) {
     async (request, reply) => {
       const { id } = request.params;
       const userMessage = request?.body?.userMessage;
+      console.log("userMessage ##", userMessage);
 
       if (!userMessage) {
         ResponseFormat[400]({ reply, message: "Message is required." });
