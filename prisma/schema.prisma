@@ -91,22 +91,33 @@ model persona {
   tenant_id String @db.ObjectId
   tenant    tenant @relation(fields: [tenant_id], references: [id])
 
-  job_id String      @db.ObjectId
-  job    persona_job @relation(fields: [job_id], references: [id])
+  // job_id String?      @db.ObjectId
+  // job    persona_job? @relation(fields: [job_id], references: [id])
 
-  industry_id String           @db.ObjectId
-  industry    persona_industry @relation(fields: [industry_id], references: [id])
+  // industry_id String?           @db.ObjectId
+  // industry    persona_industry? @relation(fields: [industry_id], references: [id])
 
-  objection_id String            @db.ObjectId
-  objection    persona_objection @relation(fields: [objection_id], references: [id])
+  // objection_id String?            @db.ObjectId
+  // objection    persona_objection? @relation(fields: [objection_id], references: [id])
 
-  name_id String       @db.ObjectId
-  name    persona_name @relation(fields: [name_id], references: [id])
+  // name_id String?       @db.ObjectId
+  // name    persona_name? @relation(fields: [name_id], references: [id])
 
-  is_deleted      Boolean?         @default(false)
-  role_play_calls role_play_call[]
-  created_at      DateTime         @default(now())
-  updated_at      DateTime         @updatedAt
+  name   String
+  prompt String
+
+  is_deleted          Boolean?           @default(false)
+  role_play_calls     role_play_call[]
+  created_at          DateTime           @default(now())
+  updated_at          DateTime           @updatedAt
+  persona_job         persona_job?       @relation(fields: [persona_jobId], references: [id])
+  persona_jobId       String?            @db.ObjectId
+  persona_industry    persona_industry?  @relation(fields: [persona_industryId], references: [id])
+  persona_industryId  String?            @db.ObjectId
+  persona_objection   persona_objection? @relation(fields: [persona_objectionId], references: [id])
+  persona_objectionId String?            @db.ObjectId
+  persona_name        persona_name?      @relation(fields: [persona_nameId], references: [id])
+  persona_nameId      String?            @db.ObjectId
 }
 
 model call_type {
@@ -120,12 +131,12 @@ model call_type {
 }
 
 model role_play_call {
-  id         String @id @default(auto()) @map("_id") @db.ObjectId
-  session_id String @unique
-
-  tenant_id  String   @db.ObjectId
-  tenant     tenant   @relation(fields: [tenant_id], references: [id])
-  is_deleted Boolean? @default(false)
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  session_id      String   @unique
+  open_ai_session Json?    @default("{}")
+  tenant_id       String   @db.ObjectId
+  tenant          tenant   @relation(fields: [tenant_id], references: [id])
+  is_deleted      Boolean? @default(false)
 
   user_id    String  @db.ObjectId
   user       user    @relation(fields: [user_id], references: [id])

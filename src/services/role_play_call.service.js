@@ -25,9 +25,10 @@ const getPreExistingCallOfCallType = async ({ request, call_type_id }) => {
       persona: {
         select: {
           name: true,
-          job: true,
-          objection: true,
-          industry: true,
+          prompt: true,
+          // job: true,
+          // objection: true,
+          // industry: true,
         },
       },
     },
@@ -58,9 +59,11 @@ const fetchRecentRolePlayCallBySession = async ({ request, session_id }) => {
       persona: {
         select: {
           name: true,
-          job: true,
-          objection: true,
-          industry: true,
+          prompt: true,
+
+          // job: true,
+          // objection: true,
+          // industry: true,
         },
       },
       transcript: true,
@@ -164,9 +167,11 @@ const createRankedCallWithDefaultRule = async ({ request, reply }) => {
       persona: {
         select: {
           name: true,
-          job: true,
-          objection: true,
-          industry: true,
+          prompt: true,
+
+          // job: true,
+          // objection: true,
+          // industry: true,
         },
       },
     },
@@ -200,9 +205,11 @@ const createPractiseRankedCallWithSpecifiedPersona = async ({
       persona: {
         select: {
           name: true,
-          job: true,
-          objection: true,
-          industry: true,
+          prompt: true,
+
+          // job: true,
+          // objection: true,
+          // industry: true,
         },
       },
     },

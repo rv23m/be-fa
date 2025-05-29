@@ -156,7 +156,38 @@ async function routes(fastify, options) {
         return reply;
       }
 
-      const rolePlayPrompt = `You are role playing as a potential sales lead that is being sold a product. There are 2 role plays practise and ranked (marked for evaluation). This is ${rolePlayCall?.call_type?.prompt_name}. Here are some instructions: - Do not narrate what you are doing - Your name is ${rolePlayCall?.persona?.name?.prompt_name}- Your role is [${rolePlayCall?.persona?.job?.prompt_job}] - Your industry is [${rolePlayCall?.persona?.industry?.prompt_industry}]- Your objection is [${rolePlayCall?.persona?.objection?.prompt_objection}]`;
+      // const rolePlayPrompt = `You are role playing as a potential sales lead that is being sold a product. There are 2 role plays practise and ranked (marked for evaluation). This is ${rolePlayCall?.call_type?.prompt_name}. Here are some instructions: - Do not narrate what you are doing - Your name is ${rolePlayCall?.persona?.name?.prompt_name}- Your role is [${rolePlayCall?.persona?.job?.prompt_job}] - Your industry is [${rolePlayCall?.persona?.industry?.prompt_industry}]- Your objection is [${rolePlayCall?.persona?.objection?.prompt_objection}]`;
+
+      // user is interuppting ai to sell. hey you are role playing as a potential sales lead whose day is interrpted by sales persoon and they are trying to sell you something.
+      // you are dealing with sales person.
+      // your concerns - objection (but don't let them know that )
+
+      //       const rolePlayPrompt = `You are role playing as a potential sales lead. This is ${rolePlayCall?.call_type?.prompt_name}. Instructions:
+      // - Express frustration clearly but stay realistic (no yelling).
+      // - Your name is ${rolePlayCall?.persona?.name?.prompt_name}.
+      // - Your role is [${rolePlayCall?.persona?.job?.prompt_job}].
+      // - Your industry is [${rolePlayCall?.persona?.industry?.prompt_industry}]
+      // - Your recent problem involves [${rolePlayCall?.persona?.objection?.prompt_objection}].
+      // - Make sure to push for escalation if not satisfied.`;
+
+      const names = [
+        "alloy",
+        "ash",
+        "ballad",
+        "coral",
+        "echo",
+        "fable",
+        "onyx",
+        "nova",
+        "sage",
+        "shimmer",
+        "vers",
+      ];
+
+      const rolePlayPrompt =
+        rolePlayCall?.persona?.prompt ??
+        'You are "Curious but Skeptical Cameron," a potential buyer who is analytical, cautious, and doubtful of marketing claims. You want hard facts and evidence before trusting the product or salesperson. Ask questions that challenge the credibility, pricing, features, and competitors of the product. Express doubt often, but remain curious enough to keep the conversation going. Push the salesperson to justify every benefit they claim.';
+
       const systemPrompt = {
         role: "system",
         content: rolePlayPrompt,
@@ -169,6 +200,28 @@ async function routes(fastify, options) {
         transcript.push(systemPrompt);
       }
 
+      const r = await fetch("https://api.openai.com/v1/realtime/sessions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "gpt-4o-realtime-preview-2024-12-17",
+          voice: names[Math.floor(Math.random() * names.length)] ?? "coral",
+          instructions: rolePlayPrompt,
+          turn_detection: {
+            eagerness: "auto",
+            type: "semantic_vad",
+          },
+          input_audio_transcription: {
+            language: "en",
+            model: "gpt-4o-transcribe",
+          },
+        }),
+      });
+      const data = await r.json();
+
       const updatedRolePlayCall =
         await ROLE_PLAY_CALL_SERVICES.updateRolePlayCallBySession({
           request,
@@ -176,6 +229,7 @@ async function routes(fastify, options) {
           data: {
             transcript,
             call_start_time: new Date(),
+            open_ai_session: data,
           },
         });
 
@@ -387,9 +441,9 @@ async function routes(fastify, options) {
       transcript
         .map((msg) => {
           if (msg.role === "user") {
-            return `**${username}**: ${msg.content}`;
+            return `**${username}**: ${msg.transcript}`;
           } else if (msg.role === "assistant") {
-            return `**${aiPersonaName}**: ${msg.content}`;
+            return `**${aiPersonaName}**: ${msg.transcript}`;
           } else {
             return "";
           }
@@ -445,7 +499,8 @@ async function routes(fastify, options) {
         const formattedTranscript = formatTranscript({
           transcript,
           username: username,
-          aiPersonaName: personaName,
+          // aiPersonaName: personaName ,
+          aiPersonaName: rolePlayCall?.persona?.name ?? "CAMERON",
         });
 
         const isCallRanked = rolePlayCall?.call_type?.name === "ranked";
@@ -466,11 +521,16 @@ async function routes(fastify, options) {
                     personaName,
                     formattedTranscript,
                   })
-                : PRACTISE_CALL_SUMMARIZE_PROMPT({
+                : RANKED_CALL_SUMMARIZE_PROMPT({
                     username,
                     personaName,
                     formattedTranscript,
                   }),
+              // : PRACTISE_CALL_SUMMARIZE_PROMPT({
+              //     username,
+              //     personaName,
+              //     formattedTranscript,
+              //   }),
             },
           ],
           temperature: 1,
@@ -495,7 +555,9 @@ async function routes(fastify, options) {
                 ? {
                     cleaned_transcript: formattedResponse?.formatted_transcript,
                   }
-                : {}),
+                : {
+                    cleaned_transcript: formattedResponse?.formatted_transcript,
+                  }),
               listen_to_talk_ratio: parseFloat(
                 formattedResponse?.listen_vs_talk_percentage
               ),
@@ -517,6 +579,57 @@ async function routes(fastify, options) {
         return reply;
       } catch (error) {
         console.error("Error with OpenAI API:", error?.message, error);
+        ResponseFormat[400]({
+          reply,
+          message: error?.message,
+        });
+        return reply;
+      }
+    }
+  );
+
+  fastify.put(
+    `/${ROUTE_LEVEL_IDENTIFIER}/session/update/:id`,
+    async (request, reply) => {
+      const { id } = request.params; // Extract the `id` from the URL
+      const { transcription } = request.body;
+      try {
+        // Send request to OpenAI API with Taylor Morgan's role and user's message
+        // OpenAI API call
+
+        const rolePlayCall =
+          await ROLE_PLAY_CALL_SERVICES.fetchRecentRolePlayCallBySession({
+            request,
+            session_id: id,
+          });
+
+        if (rolePlayCall?.session_closed) {
+          ResponseFormat[200]({
+            reply,
+            data: {
+              role_play_call: rolePlayCall,
+            },
+          });
+          return reply;
+        }
+
+        const updatedRolePlayCall =
+          await ROLE_PLAY_CALL_SERVICES.updateRolePlayCallBySession({
+            request,
+            session_id: id,
+            data: {
+              transcript: transcription,
+            },
+          });
+
+        ResponseFormat[200]({
+          reply,
+          data: {
+            role_play_call: updatedRolePlayCall,
+          },
+        });
+        return reply;
+      } catch (error) {
         ResponseFormat[400]({
           reply,
           message: error?.message,
