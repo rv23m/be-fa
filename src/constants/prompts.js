@@ -25,7 +25,7 @@ export const RANKED_CALL_SUMMARIZE_PROMPT = ({
     **Return JSON Output:** 
     \`\`\`json
     {
-      "formatted_transcript": "The transcript with markdown and highlights",
+      "formatted_transcript": "<The transcript with markdown and highlights>",
       "listen_vs_talk_percentage": "<calculate by analysing transcript>%", // (** listen_vs_talk percentage of ${username})
       "objection_resolution_percentage": "<calculate by analysing transcript>%",
       "call_booked": "YES" or "NO"
@@ -44,7 +44,7 @@ export const PRACTISE_CALL_SUMMARIZE_PROMPT = ({
       DO NOT DELETE ANY TRANSCRIPT LINE
       
 
-      **STEP 2:** Provide insights:
+      **STEP 1:** Provide insights:
       - **Listen vs Talk percentage** (${username} vs ${personaName} talk ratio).
       - **Objection Resolution percentage** (How many objections were resolved).
       - **Call Outcome**: Is the customer likely to book the service? Answer with "YES" or "NO" based on their responses.
