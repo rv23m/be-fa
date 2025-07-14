@@ -183,10 +183,21 @@ async function routes(fastify, options) {
         "shimmer",
         "vers",
       ];
-
+      // Pretend you are roleplaying with a salesperson who is practicing how they will call a sales lead or potential customer. Their goal is to call you to convince you to book a demo for their product or service. Don’t directly tell them this, but you will only book the demo if you are satisfied with their sales pitch. Otherwise, ask them to refrain from calling you in the future.
+      // In this scenario, your name is (Name).
+      // Your personality shouldn’t be too over the top, but you are a little (Mood).
+      // Your title in your company is (Title).
+      // You work in the (Industry) industry.
+      // Your current biggest challenge is (Challenge).
+      // To begin, act as if you’re answering the phone by saying “Hello”.
+      const preRolePlayPrompt =
+        "Pretend you are roleplaying with a salesperson who is practicing how they will call a sales lead or potential customer. Their goal is to call you to convince you to book a demo for their product or service. Don’t directly tell them this, but you will only book the demo if you are satisfied with their sales pitch. Otherwise, ask them to refrain from calling you in the future. ";
+      const postRolePrompt =
+        " To begin, act as if you’re answering the phone by saying “Hello”.";
       const rolePlayPrompt =
-        rolePlayCall?.persona?.prompt ??
-        'You are "Curious but Skeptical Cameron," a potential buyer who is analytical, cautious, and doubtful of marketing claims. You want hard facts and evidence before trusting the product or salesperson. Ask questions that challenge the credibility, pricing, features, and competitors of the product. Express doubt often, but remain curious enough to keep the conversation going. Push the salesperson to justify every benefit they claim.';
+        preRolePlayPrompt +
+        (rolePlayCall?.persona?.prompt ??
+          'You are "Curious but Skeptical Cameron," a potential buyer who is analytical, cautious, and doubtful of marketing claims. You want hard facts and evidence before trusting the product or salesperson. Ask questions that challenge the credibility, pricing, features, and competitors of the product. Express doubt often, but remain curious enough to keep the conversation going. Push the salesperson to justify every benefit they claim.');
 
       const systemPrompt = {
         role: "system",
@@ -636,6 +647,47 @@ async function routes(fastify, options) {
         });
         return reply;
       }
+    }
+  );
+
+  fastify.post(
+    `/${ROUTE_LEVEL_IDENTIFIER}/all`,
+    // { preHandler: [fastify.authenticate] },
+    async (request, reply) => {
+      const rolePlayCall =
+        await ROLE_PLAY_CALL_SERVICES.fetchRecentRolePlayCallAll({
+          request,
+        });
+
+      delete rolePlayCall?.transcript;
+
+      ResponseFormat[200]({
+        reply,
+        data: {
+          role_play_calls: rolePlayCall,
+        },
+      });
+      return reply;
+    }
+  );
+  fastify.post(
+    `/${ROUTE_LEVEL_IDENTIFIER}/allByUser`,
+    // { preHandler: [fastify.authenticate] },
+    async (request, reply) => {
+      const rolePlayCall =
+        await ROLE_PLAY_CALL_SERVICES.fetchRecentRolePlayCallAllByUser({
+          request,
+        });
+
+      delete rolePlayCall?.transcript;
+
+      ResponseFormat[200]({
+        reply,
+        data: {
+          role_play_calls: rolePlayCall,
+        },
+      });
+      return reply;
     }
   );
 }
