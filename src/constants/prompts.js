@@ -3,6 +3,16 @@ export const RANKED_CALL_SUMMARIZE_PROMPT = ({
   personaName,
   formattedTranscript,
 }) => {
+  /**
+   * keep the percentage more accurate like 8%, 18%, and like that not just 89% like that choose all numbers so that average is not close to 50% immediately i want atleast 1 user to get 100 calls before hitting 50% average.
+   *
+   * instead of asking AI to judge the context
+   * - ask ai in a strict questions
+   * - for example : ask ai for Probability(listen) (try in units of number of words)
+   * - for example : ask ai for Probability(talk)
+   * - for example : ask ai for Probability(objections) {questions asked by ai}
+   * - for example : ask ai for Probability(resolutions) {number of answers provided to those question on a satisfaction level of 5 on a scale of 0-5}
+   */
   return `
     Below is a sales call transcript. Follow these steps:
     DO NOT DELETE ANY TRANSCRIPT LINE

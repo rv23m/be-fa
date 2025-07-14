@@ -232,6 +232,127 @@ const updateRolePlayCallBySession = async ({ request, session_id, data }) => {
   return updatedRolePlayCall;
 };
 
+const fetchRecentRolePlayCallAll = async ({ request }) => {
+  const { userIds = [], sort = [], startDate, endDate } = request.body ?? {};
+
+  const allowedSortFields = [
+    "listen_to_talk_ratio",
+    "close_rate",
+    "objection_resolution",
+  ];
+
+  // Pick the first valid sort field from the browser (only 1 allowed at a time)
+  const firstValidSort = Array.isArray(sort)
+    ? sort.find(({ field }) => allowedSortFields.includes(field))
+    : null;
+
+  const orderBy = firstValidSort
+    ? [
+        {
+          [firstValidSort.field]:
+            firstValidSort.direction === "asc" ? "asc" : "desc",
+        },
+      ]
+    : [{ created_at: "desc" }];
+
+  const rolePlayCall = await dailPrisma.role_play_call.findMany({
+    orderBy,
+    where: {
+      // user_id: request?.user?.id ?? "",
+      tenant_id: request?.user?.tenant?.id ?? "",
+      call_end_time: {
+        not: null,
+      },
+      ...(Array.isArray(userIds) &&
+        userIds.length > 0 && {
+          user_id: { in: userIds },
+        }),
+      ...(startDate &&
+        endDate && {
+          created_at: {
+            gte: new Date(startDate),
+            lte: new Date(endDate),
+          },
+        }),
+    },
+    select: {
+      id: true,
+      session_id: true,
+      created_at: true,
+      updated_at: true,
+      call_type: true,
+      call_start_time: true,
+      call_end_time: true,
+      cleaned_transcript: true,
+      persona: {
+        select: {
+          name: true,
+          prompt: true,
+
+          // job: true,
+          // objection: true,
+          // industry: true,
+        },
+      },
+      transcript: true,
+      session_closed: true,
+      listen_to_talk_ratio: true,
+      close_rate: true,
+      objection_resolution: true,
+    },
+  });
+
+  return rolePlayCall;
+};
+
+const fetchRecentRolePlayCallAllByUser = async ({ request }) => {
+  const { startDate, endDate } = request.body ?? {};
+
+  const rolePlayCall = await dailPrisma.role_play_call.groupBy({
+    by: ["user_id"],
+    where: {
+      tenant_id: request?.user?.tenant?.id ?? "",
+      call_end_time: { not: null },
+      ...(startDate &&
+        endDate && {
+          created_at: {
+            gte: new Date(startDate),
+            lte: new Date(endDate),
+          },
+        }),
+    },
+    _avg: {
+      listen_to_talk_ratio: true,
+      objection_resolution: true,
+    },
+    _count: {
+      close_rate: true, // counts total where close_rate is NOT null
+      id: true, // total calls
+    },
+  });
+
+  const enrichedData = await Promise.all(
+    rolePlayCall.map(async (item) => {
+      const user = await dailPrisma.user.findUnique({
+        where: { id: item.user_id, is_deleted: false, is_frozen: false },
+        select: {
+          first_name: true,
+          last_name: true,
+          id: true,
+          email: true,
+        },
+      });
+
+      return {
+        ...item,
+        user,
+      };
+    })
+  );
+
+  return enrichedData;
+};
+
 export const ROLE_PLAY_CALL_SERVICES = {
   getPreExistingCallOfCallType,
   fetchRecentRolePlayRankedCall,
@@ -240,5 +361,7 @@ export const ROLE_PLAY_CALL_SERVICES = {
   createPractiseRankedCallWithSpecifiedPersona,
   fetchRecentRolePlayCallBySession,
   updateRolePlayCallBySession,
+  fetchRecentRolePlayCallAll,
+  fetchRecentRolePlayCallAllByUser,
 };
 export default ROLE_PLAY_CALL_SERVICES;
