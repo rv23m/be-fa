@@ -181,7 +181,7 @@ async function routes(fastify, options) {
         // "nova",
         "sage",
         "shimmer",
-        "vers",
+        // "vers",
       ];
       // Pretend you are roleplaying with a salesperson who is practicing how they will call a sales lead or potential customer. Their goal is to call you to convince you to book a demo for their product or service. Don’t directly tell them this, but you will only book the demo if you are satisfied with their sales pitch. Otherwise, ask them to refrain from calling you in the future.
       // In this scenario, your name is (Name).
