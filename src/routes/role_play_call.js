@@ -195,9 +195,9 @@ async function routes(fastify, options) {
       const postRolePrompt =
         " To begin, act as if you’re answering the phone by saying “Hello”.";
       const rolePlayPrompt =
-        preRolePlayPrompt +
-        (rolePlayCall?.persona?.prompt ??
-          'You are "Curious but Skeptical Cameron," a potential buyer who is analytical, cautious, and doubtful of marketing claims. You want hard facts and evidence before trusting the product or salesperson. Ask questions that challenge the credibility, pricing, features, and competitors of the product. Express doubt often, but remain curious enough to keep the conversation going. Push the salesperson to justify every benefit they claim.');
+        // preRolePlayPrompt +
+        rolePlayCall?.persona?.prompt ??
+        'You are "Curious but Skeptical Cameron," a potential buyer who is analytical, cautious, and doubtful of marketing claims. You want hard facts and evidence before trusting the product or salesperson. Ask questions that challenge the credibility, pricing, features, and competitors of the product. Express doubt often, but remain curious enough to keep the conversation going. Push the salesperson to justify every benefit they claim.';
 
       const systemPrompt = {
         role: "system",
