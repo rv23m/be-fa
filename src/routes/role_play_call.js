@@ -176,9 +176,9 @@ async function routes(fastify, options) {
         "ballad",
         "coral",
         "echo",
-        "fable",
-        "onyx",
-        "nova",
+        // "fable",
+        // "onyx",
+        // "nova",
         "sage",
         "shimmer",
         "vers",
@@ -505,7 +505,9 @@ async function routes(fastify, options) {
 
         const transcript = rolePlayCall?.transcript;
         const username = `${request?.user?.first_name} ${request?.user?.last_name}`;
-        const personaName = rolePlayCall?.persona?.name?.prompt_name;
+        const personaName =
+          rolePlayCall?.persona?.name ??
+          rolePlayCall?.persona?.name?.prompt_name;
 
         const formattedTranscript = formatTranscript({
           transcript,
