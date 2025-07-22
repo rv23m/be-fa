@@ -503,90 +503,102 @@ async function routes(fastify, options) {
           return reply;
         }
 
-        const transcript = rolePlayCall?.transcript;
-        const username = `${request?.user?.first_name} ${request?.user?.last_name}`;
-        const personaName =
-          rolePlayCall?.persona?.name ??
-          rolePlayCall?.persona?.name?.prompt_name;
-
-        const formattedTranscript = formatTranscript({
-          transcript,
-          username: username,
-          // aiPersonaName: personaName ,
-          aiPersonaName: rolePlayCall?.persona?.name ?? "CAMERON",
-        });
-
-        const isCallRanked = rolePlayCall?.call_type?.name === "ranked";
-
-        const response = await openai.chat.completions.create({
-          model: "gpt-4-turbo",
-          messages: [
-            {
-              role: "system",
-              content:
-                "You are an AI call analysis assistant. Always respond in valid JSON format.",
-            },
-            {
-              role: "user",
-              content: isCallRanked
-                ? RANKED_CALL_SUMMARIZE_PROMPT({
-                    username,
-                    personaName,
-                    formattedTranscript,
-                  })
-                : RANKED_CALL_SUMMARIZE_PROMPT({
-                    username,
-                    personaName,
-                    formattedTranscript,
-                  }),
-              // : PRACTISE_CALL_SUMMARIZE_PROMPT({
-              //     username,
-              //     personaName,
-              //     formattedTranscript,
-              //   }),
-            },
-          ],
-          temperature: 1,
-          max_tokens: 2048,
-          top_p: 1,
-          frequency_penalty: 0,
-          presence_penalty: 0,
-          response_format: {
-            type: "json_object",
-          }, // Ensures JSON response format
-        });
-        const formattedResponse = parseToJson(
-          response?.choices?.[0]?.message?.content
-        );
-
-        const updatedRolePlayCall =
+        const fastUpdatedRolePlayCall =
           await ROLE_PLAY_CALL_SERVICES.updateRolePlayCallBySession({
             request,
             session_id: id,
             data: {
-              ...(isCallRanked
-                ? {
-                    cleaned_transcript: formattedResponse?.formatted_transcript,
-                  }
-                : {
-                    cleaned_transcript: formattedResponse?.formatted_transcript,
-                  }),
-              listen_to_talk_ratio: parseFloat(
-                formattedResponse?.listen_vs_talk_percentage
-              ),
-              objection_resolution: parseFloat(
-                formattedResponse?.objection_resolution_percentage
-              ),
-              close_rate: formattedResponse?.call_booked === "YES",
               call_end_time: new Date(),
               session_closed: true,
             },
           });
 
+        (async () => {
+          const transcript = rolePlayCall?.transcript;
+          const username = `${request?.user?.first_name} ${request?.user?.last_name}`;
+          const personaName =
+            rolePlayCall?.persona?.name ??
+            rolePlayCall?.persona?.name?.prompt_name;
+
+          const formattedTranscript = formatTranscript({
+            transcript,
+            username: username,
+            // aiPersonaName: personaName ,
+            aiPersonaName: rolePlayCall?.persona?.name ?? "CAMERON",
+          });
+
+          const isCallRanked = rolePlayCall?.call_type?.name === "ranked";
+
+          const response = await openai.chat.completions.create({
+            model: "gpt-4-turbo",
+            messages: [
+              {
+                role: "system",
+                content:
+                  "You are an AI call analysis assistant. Always respond in valid JSON format.",
+              },
+              {
+                role: "user",
+                content: isCallRanked
+                  ? RANKED_CALL_SUMMARIZE_PROMPT({
+                      username,
+                      personaName,
+                      formattedTranscript,
+                    })
+                  : RANKED_CALL_SUMMARIZE_PROMPT({
+                      username,
+                      personaName,
+                      formattedTranscript,
+                    }),
+                // : PRACTISE_CALL_SUMMARIZE_PROMPT({
+                //     username,
+                //     personaName,
+                //     formattedTranscript,
+                //   }),
+              },
+            ],
+            temperature: 1,
+            max_tokens: 2048,
+            top_p: 1,
+            frequency_penalty: 0,
+            presence_penalty: 0,
+            response_format: {
+              type: "json_object",
+            }, // Ensures JSON response format
+          });
+          const formattedResponse = parseToJson(
+            response?.choices?.[0]?.message?.content
+          );
+
+          const updatedRolePlayCall =
+            await ROLE_PLAY_CALL_SERVICES.updateRolePlayCallBySession({
+              request,
+              session_id: id,
+              data: {
+                ...(isCallRanked
+                  ? {
+                      cleaned_transcript:
+                        formattedResponse?.formatted_transcript,
+                    }
+                  : {
+                      cleaned_transcript:
+                        formattedResponse?.formatted_transcript,
+                    }),
+                listen_to_talk_ratio: parseFloat(
+                  formattedResponse?.listen_vs_talk_percentage
+                ),
+                objection_resolution: parseFloat(
+                  formattedResponse?.objection_resolution_percentage
+                ),
+                close_rate: formattedResponse?.call_booked === "YES",
+              },
+            });
+        })();
+
         ResponseFormat[200]({
           reply,
           data: {
-            role_play_call: updatedRolePlayCall,
+            role_play_call: fastUpdatedRolePlayCall,
           },
         });
         return reply;
