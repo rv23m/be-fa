@@ -21,12 +21,16 @@ model tenant {
 }
 
 model role {
-  id         String   @id @default(auto()) @map("_id") @db.ObjectId
-  name       String   @unique
-  users      user[]
-  is_deleted Boolean? @default(false)
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  id                String   @id @default(auto()) @map("_id") @db.ObjectId
+  name              String   @unique
+  users             user[]
+  isLeaderboardPage Boolean? @default(false)
+  isPersonaPage     Boolean? @default(false)
+  isTeamsPage       Boolean? @default(false)
+  is_deleted        Boolean? @default(false)
+  canSeeTeamStats   Boolean? @default(false)
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
 }
 
 model user {
