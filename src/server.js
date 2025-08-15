@@ -61,7 +61,7 @@ await fastify.register(fastifyHelmet);
 await fastify.register(fastifyCookie);
 await fastify.register(fastifyCors, {
   origin: "*", // Change this to your frontend URL for security
-  methods: ["GET", "POST", "OPTIONS", "PUT"],
+  methods: ["GET", "POST", "OPTIONS", "PUT", "DELETE"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true, // ✅ Allow credentials (important for streaming)
   exposedHeaders: ["Content-Type", "Authorization"], // ✅ Expose required headers

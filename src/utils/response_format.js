@@ -13,6 +13,20 @@ export const ResponseFormat = {
       data,
     });
   },
+  401: ({ reply, data, message = "An error occurred", statusCode = 401 }) => {
+    return reply.code(statusCode).send({
+      success: false,
+      message,
+      data,
+    });
+  },
+  403: ({ reply, data, message = "An error occurred", statusCode = 401 }) => {
+    return reply.code(statusCode).send({
+      success: false,
+      message,
+      data,
+    });
+  },
 };
 
 export default ResponseFormat;

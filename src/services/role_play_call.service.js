@@ -234,6 +234,7 @@ const updateRolePlayCallBySession = async ({ request, session_id, data }) => {
 
 const fetchRecentRolePlayCallAll = async ({ request }) => {
   const { userIds = [], sort = [], startDate, endDate } = request.body ?? {};
+  const canSeeTeamStats = request?.user?.role?.canSeeTeamStats;
 
   const allowedSortFields = [
     "listen_to_talk_ratio",
@@ -258,14 +259,14 @@ const fetchRecentRolePlayCallAll = async ({ request }) => {
   const rolePlayCall = await dailPrisma.role_play_call.findMany({
     orderBy,
     where: {
-      // user_id: request?.user?.id ?? "",
+      ...(canSeeTeamStats ? {} : { user_id: request?.user?.id }),
       tenant_id: request?.user?.tenant?.id ?? "",
       call_end_time: {
         not: null,
       },
       ...(Array.isArray(userIds) &&
         userIds.length > 0 && {
-          user_id: { in: userIds },
+          user_id: { in: canSeeTeamStats ? userIds : [request?.user?.id] },
         }),
       ...(startDate &&
         endDate && {
@@ -307,12 +308,14 @@ const fetchRecentRolePlayCallAll = async ({ request }) => {
 
 const fetchRecentRolePlayCallAllByUser = async ({ request }) => {
   const { startDate, endDate } = request.body ?? {};
+  const canSeeTeamStats = request?.user?.role?.canSeeTeamStats;
 
   const rolePlayCall = await dailPrisma.role_play_call.groupBy({
     by: ["user_id"],
     where: {
       tenant_id: request?.user?.tenant?.id ?? "",
       call_end_time: { not: null },
+      ...(canSeeTeamStats ? {} : { user_id: request?.user?.id }),
       ...(startDate &&
         endDate && {
           created_at: {
