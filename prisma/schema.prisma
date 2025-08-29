@@ -51,43 +51,43 @@ model user {
 }
 
 model persona_job {
-  id         String    @id @default(auto()) @map("_id") @db.ObjectId
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
   title      String
   prompt_job String
-  personas   persona[]
-  is_deleted Boolean?  @default(false)
-  created_at DateTime  @default(now())
-  updated_at DateTime  @updatedAt
+  // personas   persona[]
+  is_deleted Boolean? @default(false)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 }
 
 model persona_industry {
-  id              String    @id @default(auto()) @map("_id") @db.ObjectId
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
   industry        String
   prompt_industry String
-  personas        persona[]
-  is_deleted      Boolean?  @default(false)
-  created_at      DateTime  @default(now())
-  updated_at      DateTime  @updatedAt
+  // personas        persona[]
+  is_deleted      Boolean? @default(false)
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
 }
 
 model persona_objection {
-  id               String    @id @default(auto()) @map("_id") @db.ObjectId
+  id               String   @id @default(auto()) @map("_id") @db.ObjectId
   objection        String
   prompt_objection String
-  personas         persona[]
-  is_deleted       Boolean?  @default(false)
-  created_at       DateTime  @default(now())
-  updated_at       DateTime  @updatedAt
+  // personas         persona[]
+  is_deleted       Boolean? @default(false)
+  created_at       DateTime @default(now())
+  updated_at       DateTime @updatedAt
 }
 
 model persona_name {
-  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
   name        String
   prompt_name String
-  personas    persona[]
-  is_deleted  Boolean?  @default(false)
-  created_at  DateTime  @default(now())
-  updated_at  DateTime  @updatedAt
+  // personas    persona[]
+  is_deleted  Boolean? @default(false)
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
 }
 
 model persona {
@@ -107,21 +107,16 @@ model persona {
   // name_id String?       @db.ObjectId
   // name    persona_name? @relation(fields: [name_id], references: [id])
 
-  name   String
-  prompt String
+  name      String
+  prompt    String
+  job       String?
+  industry  String?
+  objection String?
 
-  is_deleted          Boolean?           @default(false)
-  role_play_calls     role_play_call[]
-  created_at          DateTime           @default(now())
-  updated_at          DateTime           @updatedAt
-  persona_job         persona_job?       @relation(fields: [persona_jobId], references: [id])
-  persona_jobId       String?            @db.ObjectId
-  persona_industry    persona_industry?  @relation(fields: [persona_industryId], references: [id])
-  persona_industryId  String?            @db.ObjectId
-  persona_objection   persona_objection? @relation(fields: [persona_objectionId], references: [id])
-  persona_objectionId String?            @db.ObjectId
-  persona_name        persona_name?      @relation(fields: [persona_nameId], references: [id])
-  persona_nameId      String?            @db.ObjectId
+  is_deleted      Boolean?         @default(false)
+  role_play_calls role_play_call[]
+  created_at      DateTime         @default(now())
+  updated_at      DateTime         @updatedAt
 }
 
 model call_type {
