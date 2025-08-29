@@ -232,8 +232,17 @@ const updateRolePlayCallBySession = async ({ request, session_id, data }) => {
   return updatedRolePlayCall;
 };
 
+// Updated service with pagination
 const fetchRecentRolePlayCallAll = async ({ request }) => {
-  const { userIds = [], sort = [], startDate, endDate } = request.body ?? {};
+  const {
+    userIds = [],
+    sort = [],
+    startDate,
+    endDate,
+    page = 1,
+    limit = 10,
+  } = request.body ?? {};
+
   const canSeeTeamStats = request?.user?.role?.canSeeTeamStats;
 
   const allowedSortFields = [
@@ -256,26 +265,42 @@ const fetchRecentRolePlayCallAll = async ({ request }) => {
       ]
     : [{ created_at: "desc" }];
 
+  // Pagination calculations
+  const pageNumber = Math.max(1, parseInt(page) || 1);
+  const pageSize = Math.min(100, Math.max(1, parseInt(limit) || 10)); // Max 100, min 1
+  const skip = (pageNumber - 1) * pageSize;
+
+  // Build where clause (keeping existing logic)
+  const whereClause = {
+    ...(canSeeTeamStats ? {} : { user_id: request?.user?.id }),
+    tenant_id: request?.user?.tenant?.id ?? "",
+    call_end_time: {
+      not: null,
+    },
+    ...(Array.isArray(userIds) &&
+      userIds.length > 0 && {
+        user_id: { in: canSeeTeamStats ? userIds : [request?.user?.id] },
+      }),
+    ...(startDate &&
+      endDate && {
+        created_at: {
+          gte: new Date(startDate),
+          lte: new Date(endDate),
+        },
+      }),
+  };
+
+  // Get total count for pagination metadata
+  const totalCount = await dailPrisma.role_play_call.count({
+    where: whereClause,
+  });
+
+  // Fetch paginated data
   const rolePlayCall = await dailPrisma.role_play_call.findMany({
     orderBy,
-    where: {
-      ...(canSeeTeamStats ? {} : { user_id: request?.user?.id }),
-      tenant_id: request?.user?.tenant?.id ?? "",
-      call_end_time: {
-        not: null,
-      },
-      ...(Array.isArray(userIds) &&
-        userIds.length > 0 && {
-          user_id: { in: canSeeTeamStats ? userIds : [request?.user?.id] },
-        }),
-      ...(startDate &&
-        endDate && {
-          created_at: {
-            gte: new Date(startDate),
-            lte: new Date(endDate),
-          },
-        }),
-    },
+    where: whereClause,
+    skip,
+    take: pageSize,
     select: {
       id: true,
       session_id: true,
@@ -289,7 +314,6 @@ const fetchRecentRolePlayCallAll = async ({ request }) => {
         select: {
           name: true,
           prompt: true,
-
           // job: true,
           // objection: true,
           // industry: true,
@@ -300,10 +324,30 @@ const fetchRecentRolePlayCallAll = async ({ request }) => {
       listen_to_talk_ratio: true,
       close_rate: true,
       objection_resolution: true,
+      user: true,
     },
   });
 
-  return rolePlayCall;
+  // Calculate pagination metadata
+  const totalPages = Math.ceil(totalCount / pageSize);
+  const hasNextPage = pageNumber < totalPages;
+  const hasPreviousPage = pageNumber > 1;
+
+  const pagination = {
+    currentPage: pageNumber,
+    totalPages,
+    totalCount,
+    pageSize,
+    hasNextPage,
+    hasPreviousPage,
+    ...(hasNextPage && { nextPage: pageNumber + 1 }),
+    ...(hasPreviousPage && { previousPage: pageNumber - 1 }),
+  };
+
+  return {
+    data: rolePlayCall,
+    pagination,
+  };
 };
 
 const fetchRecentRolePlayCallAllByUser = async ({ request }) => {
