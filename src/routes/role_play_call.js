@@ -1,6 +1,7 @@
 import {
   PRACTISE_CALL_SUMMARIZE_PROMPT,
   RANKED_CALL_SUMMARIZE_PROMPT,
+  TRANSCRIPT_CALL_SUMMARIZE_PROMPT,
 } from "../constants/prompts.js";
 import CALL_TYPE_SERVICE from "../services/call_type.service.js";
 import ROLE_PLAY_CALL_SERVICES from "../services/role_play_call.service.js";
@@ -503,17 +504,16 @@ async function routes(fastify, options) {
           return reply;
         }
 
-        const fastUpdatedRolePlayCall =
-          await ROLE_PLAY_CALL_SERVICES.updateRolePlayCallBySession({
-            request,
-            session_id: id,
-            data: {
-              call_end_time: new Date(),
-              session_closed: true,
-            },
-          });
+        await ROLE_PLAY_CALL_SERVICES.updateRolePlayCallBySession({
+          request,
+          session_id: id,
+          data: {
+            call_end_time: new Date(),
+            session_closed: true,
+          },
+        });
 
-        (async () => {
+        await (async () => {
           const transcript = rolePlayCall?.transcript;
           const username = `${request?.user?.first_name} ${request?.user?.last_name}`;
           const personaName =
@@ -540,21 +540,26 @@ async function routes(fastify, options) {
               {
                 role: "user",
                 content: isCallRanked
-                  ? RANKED_CALL_SUMMARIZE_PROMPT({
+                  ? PRACTISE_CALL_SUMMARIZE_PROMPT({
                       username,
                       personaName,
                       formattedTranscript,
                     })
-                  : RANKED_CALL_SUMMARIZE_PROMPT({
+                  : // ? RANKED_CALL_SUMMARIZE_PROMPT({
+                    //     username,
+                    //     personaName,
+                    //     formattedTranscript,
+                    //   })
+                    // : RANKED_CALL_SUMMARIZE_PROMPT({
+                    //     username,
+                    //     personaName,
+                    //     formattedTranscript,
+                    //   }),
+                    PRACTISE_CALL_SUMMARIZE_PROMPT({
                       username,
                       personaName,
                       formattedTranscript,
                     }),
-                // : PRACTISE_CALL_SUMMARIZE_PROMPT({
-                //     username,
-                //     personaName,
-                //     formattedTranscript,
-                //   }),
               },
             ],
             temperature: 1,
@@ -594,7 +599,118 @@ async function routes(fastify, options) {
               },
             });
         })();
+        const fastUpdatedRolePlayCall =
+          await ROLE_PLAY_CALL_SERVICES.fetchRecentRolePlayCallBySession({
+            request,
+            session_id: id,
+            data: {
+              call_end_time: new Date(),
+              session_closed: true,
+            },
+          });
+        ResponseFormat[200]({
+          reply,
+          data: {
+            role_play_call: fastUpdatedRolePlayCall,
+          },
+        });
+        return reply;
+      } catch (error) {
+        console.error("Error with OpenAI API:", error?.message, error);
+        ResponseFormat[400]({
+          reply,
+          message: error?.message,
+        });
+        return reply;
+      }
+    }
+  );
+  fastify.post(
+    `/${ROUTE_LEVEL_IDENTIFIER}/session/generateTranscription/:id`,
+    async (request, reply) => {
+      const { id } = request.params; // Extract the `id` from the URL
 
+      try {
+        // Send request to OpenAI API with Taylor Morgan's role and user's message
+        // OpenAI API call
+
+        const rolePlayCall =
+          await ROLE_PLAY_CALL_SERVICES.fetchRecentRolePlayCallBySession({
+            request,
+            session_id: id,
+          });
+
+        if (rolePlayCall?.session_closed && rolePlayCall?.cleaned_transcript) {
+          ResponseFormat[200]({
+            reply,
+            data: {
+              role_play_call: rolePlayCall,
+            },
+          });
+          return reply;
+        }
+
+        await (async () => {
+          const transcript = rolePlayCall?.transcript;
+          const username = `${request?.user?.first_name} ${request?.user?.last_name}`;
+          const personaName =
+            rolePlayCall?.persona?.name ??
+            rolePlayCall?.persona?.name?.prompt_name;
+
+          const formattedTranscript = formatTranscript({
+            transcript,
+            username: username,
+            aiPersonaName: personaName,
+          });
+
+          const response = await openai.chat.completions.create({
+            model: "gpt-4-turbo",
+            messages: [
+              {
+                role: "system",
+                content:
+                  "You are an AI call analysis assistant. Always respond in valid JSON format.",
+              },
+              {
+                role: "user",
+                content: TRANSCRIPT_CALL_SUMMARIZE_PROMPT({
+                  username,
+                  personaName,
+                  formattedTranscript,
+                }),
+              },
+            ],
+            temperature: 1,
+            max_tokens: 2048,
+            top_p: 1,
+            frequency_penalty: 0,
+            presence_penalty: 0,
+            response_format: {
+              type: "json_object",
+            }, // Ensures JSON response format
+          });
+          const formattedResponse = parseToJson(
+            response?.choices?.[0]?.message?.content
+          );
+
+          const updatedRolePlayCall =
+            await ROLE_PLAY_CALL_SERVICES.updateRolePlayCallBySession({
+              request,
+              session_id: id,
+              data: {
+                cleaned_transcript: formattedResponse?.formatted_transcript,
+              },
+            });
+        })();
+        const fastUpdatedRolePlayCall =
+          await ROLE_PLAY_CALL_SERVICES.fetchRecentRolePlayCallBySession({
+            request,
+            session_id: id,
+            data: {
+              call_end_time: new Date(),
+              session_closed: true,
+            },
+          });
         ResponseFormat[200]({
           reply,
           data: {

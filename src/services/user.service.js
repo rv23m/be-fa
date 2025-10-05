@@ -1,6 +1,7 @@
 import { dailPrisma } from "../plugins/prisma.js";
 import bcrypt from "bcrypt";
 import ResponseFormat from "../utils/response_format.js";
+import { generateRandomHexColor } from "../utils/generateRandomHexColor.js";
 
 const usersForStatsCallLogFilter = async ({ request }) => {
   const canSeeTeamStats = request?.user?.role?.canSeeTeamStats;
@@ -115,6 +116,7 @@ const createNewUser = async ({
       last_name,
       email,
       password: await bcrypt.hash(password, 10),
+      assigned_color: generateRandomHexColor(),
       role: {
         connect: { id: roleId },
       },

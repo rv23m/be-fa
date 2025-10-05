@@ -39,9 +39,12 @@ const getPreExistingCallOfCallType = async ({ request, call_type_id }) => {
 
 const fetchRecentRolePlayCallBySession = async ({ request, session_id }) => {
   const rolePlayCall = await dailPrisma.role_play_call.findFirst({
-    orderBy: {
-      created_at: "desc",
-    },
+    orderBy: [
+      {
+        call_start_time: "desc",
+      },
+      { created_at: "desc" },
+    ],
     where: {
       user_id: request?.user?.id ?? "",
       tenant_id: request?.user?.tenant?.id ?? "",
@@ -79,9 +82,12 @@ const fetchRecentRolePlayCallBySession = async ({ request, session_id }) => {
 
 const fetchRecentRolePlayRankedClosedCall = async ({ request }) => {
   const latestRolePlayCall = await dailPrisma.role_play_call.findFirst({
-    orderBy: {
-      created_at: "desc",
-    },
+    orderBy: [
+      {
+        call_start_time: "desc",
+      },
+      { created_at: "desc" },
+    ],
     where: {
       user_id: request?.user?.id ?? "",
       tenant_id: request?.user?.tenant?.id ?? "",
@@ -97,9 +103,12 @@ const fetchRecentRolePlayRankedClosedCall = async ({ request }) => {
 
 const fetchRecentRolePlayRankedCall = async ({ request }) => {
   const latestRolePlayCall = await dailPrisma.role_play_call.findFirst({
-    orderBy: {
-      created_at: "desc",
-    },
+    orderBy: [
+      {
+        call_start_time: "desc",
+      },
+      { created_at: "desc" },
+    ],
     where: {
       user_id: request?.user?.id ?? "",
       tenant_id: request?.user?.tenant?.id ?? "",
@@ -113,8 +122,42 @@ const fetchRecentRolePlayRankedCall = async ({ request }) => {
   return latestRolePlayCall;
 };
 
+const checkIfPreviousRankedCallIsBooked = async ({ request }) => {
+  const previousRankedCall = await dailPrisma.role_play_call.findFirst({
+    orderBy: [
+      {
+        call_start_time: "desc",
+      },
+      { created_at: "desc" },
+    ],
+    where: {
+      user_id: request?.user?.id ?? "",
+      tenant_id: request?.user?.tenant?.id ?? "",
+      session_closed: true,
+      call_type: {
+        name: "ranked",
+      },
+    },
+    select: {
+      id: true,
+      persona_id: true,
+      close_rate: true,
+      listen_to_talk_ratio: true,
+      objection_resolution: true,
+      created_at: true,
+      updated_at: true,
+      session_id: true,
+    },
+  });
+  return previousRankedCall?.close_rate ? null : previousRankedCall;
+};
+
 const createRankedCallWithDefaultRule = async ({ request, reply }) => {
   const rankedCallType = await CALL_TYPE_SERVICE.getRankedCallType();
+
+  const previousUnbookedRankedCall = await checkIfPreviousRankedCallIsBooked({
+    request,
+  });
 
   let chosenPersonaId = "";
 
@@ -125,6 +168,8 @@ const createRankedCallWithDefaultRule = async ({ request, reply }) => {
       reply,
       message: "No persona found.",
     });
+  } else if (previousUnbookedRankedCall) {
+    chosenPersonaId = previousUnbookedRankedCall?.persona_id;
   } else if (tenantPersonas?.length === 1) {
     chosenPersonaId = tenantPersonas?.[0]?.id;
   } else {
@@ -137,7 +182,7 @@ const createRankedCallWithDefaultRule = async ({ request, reply }) => {
     );
 
     if (latestRolePlayCall) {
-      randomizedSetOfPersonaId?.filter(
+      randomizedSetOfPersonaId = randomizedSetOfPersonaId?.filter(
         (id) => id !== latestRolePlayCall?.persona_id
       );
     }
@@ -146,6 +191,25 @@ const createRankedCallWithDefaultRule = async ({ request, reply }) => {
       randomizedSetOfPersonaId[
         Math.floor(Math.random() * randomizedSetOfPersonaId.length)
       ];
+  }
+
+  // discard any previous existing open practise call
+  if (!previousUnbookedRankedCall) {
+    console.log("Deleting previous open practise calls");
+    await dailPrisma.role_play_call.updateMany({
+      where: {
+        user_id: request?.user?.id ?? "",
+        tenant_id: request?.user?.tenant?.id ?? "",
+        call_type: {
+          name: "practise",
+        },
+        is_deleted: false,
+        session_closed: false,
+      },
+      data: {
+        is_deleted: true,
+      },
+    });
   }
 
   const newRolePlayCall = await dailPrisma.role_play_call.create({
@@ -263,7 +327,7 @@ const fetchRecentRolePlayCallAll = async ({ request }) => {
             firstValidSort.direction === "asc" ? "asc" : "desc",
         },
       ]
-    : [{ created_at: "desc" }];
+    : [{ call_start_time: "desc" }, { created_at: "desc" }];
 
   // Pagination calculations
   const pageNumber = Math.max(1, parseInt(page) || 1);
@@ -387,6 +451,7 @@ const fetchRecentRolePlayCallAllByUser = async ({ request }) => {
           last_name: true,
           id: true,
           email: true,
+          assigned_color: true,
         },
       });
 
