@@ -45,6 +45,7 @@ model user {
   role            role             @relation(fields: [role_id], references: [id])
   is_deleted      Boolean?         @default(false)
   is_frozen       Boolean?         @default(false)
+  assigned_color  String?
   created_at      DateTime         @default(now())
   updated_at      DateTime         @updatedAt
   role_play_calls role_play_call[]
