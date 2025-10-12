@@ -92,7 +92,7 @@ Go through each line and apply the following markup tags:
 - If ${username} provides an **answer, reassurance, or solution** to an objection, wrap that sentence with:  
   \`[RESOLUTION] ... [/RESOLUTION]\`  
   (This will be styled green later.)
-- If ${username} or ${personaName}  asks a **qualifying or discovery question** (e.g. starts with "How", "What", "Would you", "Can you", "Do you"), wrap the question with:  
+- If ${username} asks a **qualifying or discovery question** (e.g. starts with "How", "What", "Would you", "Can you", "Do you"), wrap the question with:  
   \`[QUESTION] ... [/QUESTION]\`  
   (This will be styled blue later.)
 
