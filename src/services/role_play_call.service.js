@@ -144,12 +144,13 @@ const checkIfPreviousRankedCallIsBooked = async ({ request }) => {
       close_rate: true,
       listen_to_talk_ratio: true,
       objection_resolution: true,
+      session_closed: true,
       created_at: true,
       updated_at: true,
       session_id: true,
     },
   });
-  return previousRankedCall?.close_rate ? null : previousRankedCall;
+  return previousRankedCall?.session_closed ? null : previousRankedCall;
 };
 
 const createRankedCallWithDefaultRule = async ({ request, reply }) => {
