@@ -206,7 +206,7 @@ Do **NOT** remove or reorder lines. Follow the instructions carefully.
 ### STEP 1 — Talk Ratio
 Estimate how much each person spoke:
 - Count approximate total **words** spoken by each speaker.
-- Return the ratio as "<${username}%>/<${personaName}%>".
+- Return the ratio as "<${personaName}%>/(<${personaName}%> + <${username}%>)".
 
 ---
 
