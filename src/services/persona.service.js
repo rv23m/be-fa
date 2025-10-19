@@ -18,11 +18,12 @@ const createPersona = async ({ request, name, job, industry, objection }) => {
       job: job,
       industry: industry,
       objection: objection,
-      prompt: PERSONA_UTIL.generateSystemPrompt(
-        `${name}, ${job}`,
-        industry,
-        objection
-      ),
+      prompt: PERSONA_UTIL.generateSystemPrompt(name, job, industry, objection),
+      // prompt: PERSONA_UTIL.generateSystemPrompt(
+      //   `${name}, ${job}`,
+      //   industry,
+      //   objection
+      // ),
       tenant: {
         connect: {
           id: request?.tenant?.id,
