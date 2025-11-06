@@ -3,6 +3,7 @@ import {
   RANKED_CALL_SUMMARIZE_PROMPT,
 } from "../constants/prompts.js";
 import CALL_TYPE_SERVICE from "../services/call_type.service.js";
+import { EMAIL_SERVICE } from "../services/email.service.js";
 import ROLES_SERVICES from "../services/role.service.js";
 import ROLE_PLAY_CALL_SERVICES from "../services/role_play_call.service.js";
 import USERS_SERVICES from "../services/user.service.js";
@@ -115,15 +116,16 @@ async function routes(fastify, options) {
   );
 
   fastify.post(`/${ROUTE_LEVEL_IDENTIFIER}/create`, async (request, reply) => {
-    const { first_name, last_name, password, roleId, email } =
-      request.body || {};
+    const { first_name, last_name, roleId, email } = request.body || {};
 
-    if (!first_name || !last_name || !password || !email || !roleId) {
+    if (!first_name || !last_name || !email || !roleId) {
       return ResponseFormat[400]({
         reply,
         message: "Missing fields.",
       });
     }
+    // TODO: send email and create user and send password
+    const password = Math.random().toString(36).substring(2, 10);
 
     // Fetch user from DB
     const user = await USERS_SERVICES.createNewUser({
@@ -134,6 +136,9 @@ async function routes(fastify, options) {
       password,
       roleId,
     });
+    user.tenant_id;
+
+    await EMAIL_SERVICE.sendUserLoginEmail(email, user, password);
 
     delete user.password;
 

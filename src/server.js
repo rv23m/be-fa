@@ -42,6 +42,7 @@ const envSchema = {
     DATABASE_URL: { type: "string" },
     JWT_SECRET: { type: "string" },
     OPENAI_API_KEY: { type: "string" },
+    FRONTEND_URL: { type: "string" },
   },
 };
 
