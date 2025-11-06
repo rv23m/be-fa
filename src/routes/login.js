@@ -40,12 +40,17 @@ async function routes(fastify, options) {
     }
 
     // Create JWT token
-    const jwtUser = { ...user };
+    const jwtUser = {
+      ...user,
+    };
+
     delete jwtUser.password;
     // TODO: store token in db
     const token = fastify.jwt.sign(
       {
-        user: jwtUser,
+        ...(user?.isFirstTimeLogin
+          ? { pseudoUser: jwtUser }
+          : { user: jwtUser }),
       },
       { expiresIn: "7d" }
     );
@@ -56,6 +61,7 @@ async function routes(fastify, options) {
       data: {
         token,
         user: jwtUser,
+        isSetup: user?.isFirstTimeLogin,
       },
     });
     return reply;
