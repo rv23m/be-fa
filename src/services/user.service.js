@@ -150,6 +150,15 @@ const deleteUser = async ({ request, reply, userId, roleId }) => {
     }
   }
 
+  await dailPrisma.$transaction([
+    dailPrisma.role_play_call.deleteMany({
+      where: { tenant_id: request?.tenant?.id ?? "", id: userId },
+    }),
+    dailPrisma.user.delete({
+      where: { tenant_id: request?.tenant?.id ?? "", id: userId },
+    }),
+  ]);
+
   const users = await dailPrisma.user.delete({
     where: {
       tenant_id: request?.tenant?.id ?? "",
