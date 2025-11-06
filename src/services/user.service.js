@@ -110,6 +110,27 @@ const createNewUser = async ({
   password,
   roleId,
 }) => {
+  const existingUser = findByEmail({ email, tenantId: request?.tenant?.id });
+
+  if (existingUser) {
+    await dailPrisma.user.update({
+      where: {
+        tenant_id: request?.tenant?.id ?? "",
+        email: email,
+      },
+      data: {
+        is_deleted: false,
+        first_name,
+        last_name,
+        password: await bcrypt.hash(password, 10),
+        role: {
+          connect: { id: roleId },
+        },
+      },
+    });
+    return existingUser;
+  }
+
   const users = await dailPrisma.user.create({
     data: {
       first_name,
@@ -149,17 +170,7 @@ const deleteUser = async ({ request, reply, userId, roleId }) => {
       });
     }
   }
-
-  // await dailPrisma.$transaction([
-  //   dailPrisma.role_play_call.deleteMany({
-  //     where: { tenant_id: request?.tenant?.id ?? "", id: userId },
-  //   }),
-  //   dailPrisma.user.delete({
-  //     where: { tenant_id: request?.tenant?.id ?? "", id: userId },
-  //   }),
-  // ]);
-
-  const users = await dailPrisma.user.delete({
+  const users = await dailPrisma.user.update({
     where: {
       tenant_id: request?.tenant?.id ?? "",
       id: userId,
