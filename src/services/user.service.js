@@ -110,8 +110,10 @@ const createNewUser = async ({
   password,
   roleId,
 }) => {
-  const existingUser = findByEmail({ email, tenantId: request?.tenant?.id });
-
+  const existingUser = await findByEmail({
+    email,
+    tenantId: request?.tenant?.id,
+  });
   if (existingUser) {
     await dailPrisma.user.update({
       where: {
