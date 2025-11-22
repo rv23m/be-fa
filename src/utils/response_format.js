@@ -1,6 +1,6 @@
 export const ResponseFormat = {
   200: ({ reply, data, message = "Success", statusCode = 200 }) => {
-    reply.code(statusCode).send({
+    return reply.code(statusCode).send({
       success: true,
       message,
       data,
