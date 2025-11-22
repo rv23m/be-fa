@@ -1,6 +1,8 @@
 import Fastify from "fastify";
 import axios from "axios";
 import OpenAI from "openai";
+import fs from "fs";
+import path from "path";
 
 import autoLoad from "@fastify/autoload";
 import fastifyJWT from "@fastify/jwt";
@@ -24,6 +26,7 @@ import serverless from "serverless-http";
 import { z } from "zod";
 import { dirname, join } from "path";
 import { fileURLToPath } from "url";
+import { EMAIL_SERVICE } from "./services/email.service.js";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 /**
@@ -206,10 +209,28 @@ await fastify.register(autoLoad, {
   encapsulate: false,
 });
 
-await fastify.register(autoLoad, {
-  dir: join(__dirname, "routes"),
-  options: { prefix: "/api/v1" },
-});
+const routeDir = join(__dirname, "routes");
+for (const file of fs.readdirSync(routeDir)) {
+  const fullPath = path.join(routeDir, file);
+  console.log("🧩 Checking route:", fullPath);
+
+  try {
+    const mod = await import(fullPath);
+    console.log("✅ Loaded:", file);
+  } catch (err) {
+    console.error("❌ Failed to import:", file, err);
+  }
+}
+
+try {
+  await fastify.register(autoLoad, {
+    dir: join(__dirname, "routes"),
+    options: { prefix: "/api/v1" },
+  });
+} catch (err) {
+  fastify.log.error(err);
+  console.error("❌ Error while registering plugins:", err);
+}
 
 fastify.listen({ port: 4000, host: "0.0.0.0" }, function (err, address) {
   if (err) {

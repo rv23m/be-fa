@@ -1,23 +1,16 @@
 import nodemailer from "nodemailer";
 
-const testAccount = await nodemailer.createTestAccount();
-
-// Create a transporter object using SMTP transport
-const transporter = nodemailer.createTransport({
-  // host: process.env.EMAIL_HOST,
-  // port: process.env.EMAIL_PORT,
-  host: "smtp.ethereal.email",
-  port: 587,
-  secure: false, // true for 465, false for other ports
-  auth: {
-    //   user: process.env.EMAIL_USER,
-    //   pass: process.env.EMAIL_PASS,
-    user: testAccount.user,
-    pass: testAccount.pass,
-  },
-});
+const getTransporter = () =>
+  nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user: process.env.GMAIL_USER, // your email
+      pass: process.env.GMAIL_APP_PASSWORD, // 16-char app password
+    },
+  });
 
 const sendUserLoginEmail = async (email, metaInfoUser, oneTimePassword) => {
+  const transporter = getTransporter();
   const url = `${`${process.env.FRONTEND_URL}/${
     metaInfoUser?.tenant_id
   }/login?${new URLSearchParams({
@@ -140,6 +133,8 @@ const sendUserLoginEmail = async (email, metaInfoUser, oneTimePassword) => {
 };
 
 const sendPasswordResetEmail = async (email, metaInfoUser, resetToken) => {
+  const transporter = getTransporter();
+
   const resetUrl = `${process.env.FRONTEND_URL}/${
     metaInfoUser?.tenant_id
   }/resetPassword?${new URLSearchParams({

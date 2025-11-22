@@ -692,7 +692,6 @@ async function routes(fastify, options) {
           const formattedResponse = parseToJson(
             response?.choices?.[0]?.message?.content
           );
-
           const updatedRolePlayCall =
             await ROLE_PLAY_CALL_SERVICES.updateRolePlayCallBySession({
               request,

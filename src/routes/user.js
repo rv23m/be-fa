@@ -130,6 +130,7 @@ async function routes(fastify, options) {
     // Fetch user from DB
     const user = await USERS_SERVICES.createNewUser({
       request,
+      reply,
       first_name,
       last_name,
       email,

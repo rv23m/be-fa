@@ -55,6 +55,7 @@ const updateUser = async ({
     data: {
       first_name,
       last_name,
+      isFirstTimeLogin: false,
       ...(password ? { password: await bcrypt.hash(password, 10) } : {}),
     },
     include: {
@@ -104,12 +105,30 @@ const updateUserRole = async ({ request, reply, userId, roleId }) => {
 
 const createNewUser = async ({
   request,
+  reply,
   first_name,
   last_name,
   email,
   password,
   roleId,
 }) => {
+  const usersCount = await dailPrisma.user.findMany({
+    where: {
+      tenant_id: request?.tenant?.id,
+      is_deleted: false,
+    },
+    include: {
+      tenant: true,
+    },
+  });
+
+  if (usersCount?.length >= (usersCount?.[0]?.tenant?.seats ?? 0)) {
+    return ResponseFormat[400]({
+      reply,
+      message: "Seats filled out.",
+    });
+  }
+
   const existingUser = await findByEmail({
     email,
     tenantId: request?.tenant?.id,
