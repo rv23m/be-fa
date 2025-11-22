@@ -103,7 +103,7 @@ async function routes(fastify, options) {
         },
         { expiresIn: "1d" }
       );
-      EMAIL_SERVICE.sendPasswordResetEmail(email, user, token);
+      await EMAIL_SERVICE.sendPasswordResetEmail(email, user, token);
       // Send response
       ResponseFormat[200]({
         reply,
