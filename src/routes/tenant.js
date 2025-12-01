@@ -18,7 +18,9 @@ async function routes(fastify, options) {
   const client = new OpenAI({
     apiKey: fastify.config.OPENAI_API_KEY, // Load API key from .env
   });
-  const projectManager = new OpenAIProjectManager(process.env.OPENAI_API_KEY);
+  const projectManager = new OpenAIProjectManager(
+    process.env.OPENAI_ADMIN_API_KEY
+  );
 
   fastify.get(`/${ROUTE_LEVEL_IDENTIFIER}/check`, async (request, reply) => {
     const { slug } = request.query;
@@ -94,19 +96,19 @@ async function routes(fastify, options) {
       } = request.body || {};
 
       // TODO: under testing
-      // const serviceAccountName = name + "-service";
-      // const description = serviceAccountName;
-      // // Step 1: Create the project
-      // const project = await projectManager.createProject(name, description);
+      const serviceAccountName = name + "-service";
+      const description = serviceAccountName;
+      // Step 1: Create the project
+      const project = await projectManager.createProject(name, description);
 
-      // // Step 3: Create service account (which generates an API key)
-      // const serviceAccount = await projectManager.createServiceAccount(
-      //   project.id,
-      //   serviceAccountName || `${name}-service-account`
-      // );
+      // Step 3: Create service account (which generates an API key)
+      const serviceAccount = await projectManager.createServiceAccount(
+        project.id,
+        serviceAccountName || `${name}-service-account`
+      );
 
-      // console.log("###", name, serviceAccount, project, serviceAccount);
-      // return;
+      console.log("###", name, serviceAccount, project, serviceAccount);
+      return;
 
       if (!name || !slug || !seats || !first_name || !last_name || !email) {
         return ResponseFormat[400]({

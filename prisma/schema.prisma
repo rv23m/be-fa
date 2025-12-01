@@ -19,6 +19,7 @@ model tenant {
   role_play_calls role_play_call[]
   created_at      DateTime         @default(now())
   updated_at      DateTime         @updatedAt
+  analytics       analytics[]
 }
 
 model role {
@@ -51,6 +52,7 @@ model user {
   created_at       DateTime         @default(now())
   updated_at       DateTime         @updatedAt
   role_play_calls  role_play_call[]
+  analytics        analytics[]
 }
 
 model persona_job {
@@ -168,4 +170,16 @@ model role_play_call {
   @@index([tenant_id])
   @@index([created_at])
   @@map("role_play_call")
+}
+
+model analytics {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  event_type String
+  tenant_id  String   @db.ObjectId
+  tenant     tenant   @relation(fields: [tenant_id], references: [id])
+  user_id    String   @db.ObjectId
+  user       user     @relation(fields: [user_id], references: [id])
+  data       Json
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 }

@@ -29,6 +29,17 @@ async function getAllTenants() {
   return tenants;
 }
 
+async function getTenantById(id) {
+  const tenants = await dailPrisma.tenant.findUnique({
+    where: {
+      is_deleted: false,
+      id,
+    },
+  });
+
+  return tenants;
+}
+
 async function getAllActiveTenants() {
   const tenants = await dailPrisma.tenant.findMany({
     where: {
@@ -88,5 +99,6 @@ export const TENANT_SERVICES = {
   createTenant,
   updateTenant,
   deleteTenant,
+  getTenantById,
 };
 export default TENANT_SERVICES;

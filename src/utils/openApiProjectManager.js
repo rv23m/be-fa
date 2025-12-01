@@ -13,7 +13,7 @@ class OpenAIProjectManager {
    */
   constructor(adminApiKey) {
     this.adminApiKey = adminApiKey;
-    this.baseUrl = "https://api.openai.com/v1/organization";
+    this.baseUrl = "https://api.openai.com/v1";
     this.headers = {
       Authorization: `Bearer ${adminApiKey}`,
       "Content-Type": "application/json",

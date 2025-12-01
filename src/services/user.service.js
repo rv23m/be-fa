@@ -7,7 +7,7 @@ const usersForStatsCallLogFilter = async ({ request }) => {
   const canSeeTeamStats = request?.user?.role?.canSeeTeamStats;
   const users = await dailPrisma.user.findMany({
     where: {
-      tenant_id: request?.user?.tenant?.id ?? "",
+      tenant_id: request?.tenant?.id ?? "",
       ...(canSeeTeamStats ? {} : { id: request?.user?.id }),
       is_deleted: false,
       is_frozen: false,
