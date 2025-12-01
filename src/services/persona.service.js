@@ -4,7 +4,7 @@ import { PERSONA_UTIL } from "../utils/persona_generator.js";
 const getAllPersona = async ({ request }) => {
   const tenantPersonas = await dailPrisma.persona.findMany({
     where: {
-      tenant_id: request?.user?.tenant?.id,
+      tenant_id: request?.tenant?.id,
       is_deleted: false,
     },
   });

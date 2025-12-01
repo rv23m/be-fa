@@ -66,9 +66,9 @@ await fastify.register(fastifyCookie);
 await fastify.register(fastifyCors, {
   origin: "*", // Change this to your frontend URL for security
   methods: ["GET", "POST", "OPTIONS", "PUT", "DELETE"],
-  allowedHeaders: ["Content-Type", "Authorization"],
+  allowedHeaders: ["Content-Type", "Authorization", "Mutated-Tenant"],
   credentials: true, // ✅ Allow credentials (important for streaming)
-  exposedHeaders: ["Content-Type", "Authorization"], // ✅ Expose required headers
+  exposedHeaders: ["Content-Type", "Authorization", "Mutated-Tenant"], // ✅ Expose required headers
 });
 await fastify.register(fastifyFormbody);
 await fastify.register(fastifyMultipart);

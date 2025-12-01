@@ -8,7 +8,7 @@ const getPreExistingCallOfCallType = async ({ request, call_type_id }) => {
   const preExistingCall = await dailPrisma.role_play_call.findFirst({
     where: {
       user_id: request?.user?.id ?? "",
-      tenant_id: request?.user?.tenant?.id ?? "",
+      tenant_id: request?.tenant?.id ?? "",
       call_type_id: call_type_id ?? "",
       is_deleted: false,
       call_start_time: undefined,
@@ -47,7 +47,7 @@ const fetchRecentRolePlayCallBySession = async ({ request, session_id }) => {
     ],
     where: {
       user_id: request?.user?.id ?? "",
-      tenant_id: request?.user?.tenant?.id ?? "",
+      tenant_id: request?.tenant?.id ?? "",
       session_id: session_id ?? "",
     },
     select: {
@@ -90,7 +90,7 @@ const fetchRecentRolePlayRankedClosedCall = async ({ request }) => {
     ],
     where: {
       user_id: request?.user?.id ?? "",
-      tenant_id: request?.user?.tenant?.id ?? "",
+      tenant_id: request?.tenant?.id ?? "",
       call_type: {
         name: "ranked",
       },
@@ -111,7 +111,7 @@ const fetchRecentRolePlayRankedCall = async ({ request }) => {
     ],
     where: {
       user_id: request?.user?.id ?? "",
-      tenant_id: request?.user?.tenant?.id ?? "",
+      tenant_id: request?.tenant?.id ?? "",
       call_type: {
         name: "ranked",
       },
@@ -132,7 +132,7 @@ const checkIfPreviousRankedCallIsBooked = async ({ request }) => {
     ],
     where: {
       user_id: request?.user?.id ?? "",
-      tenant_id: request?.user?.tenant?.id ?? "",
+      tenant_id: request?.tenant?.id ?? "",
       session_closed: true,
       call_type: {
         name: "ranked",
@@ -200,7 +200,7 @@ const createRankedCallWithDefaultRule = async ({ request, reply }) => {
     await dailPrisma.role_play_call.updateMany({
       where: {
         user_id: request?.user?.id ?? "",
-        tenant_id: request?.user?.tenant?.id ?? "",
+        tenant_id: request?.tenant?.id ?? "",
         call_type: {
           name: "practise",
         },
@@ -216,7 +216,7 @@ const createRankedCallWithDefaultRule = async ({ request, reply }) => {
   const newRolePlayCall = await dailPrisma.role_play_call.create({
     data: {
       session_id: uuidv4(),
-      tenant_id: request?.user?.tenant?.id,
+      tenant_id: request?.tenant?.id,
       user_id: request?.user?.id,
       persona_id: chosenPersonaId,
       call_type_id: rankedCallType?.id, // ranked id al
@@ -254,7 +254,7 @@ const createPractiseRankedCallWithSpecifiedPersona = async ({
   const newRolePlayCall = await dailPrisma.role_play_call.create({
     data: {
       session_id: uuidv4(),
-      tenant_id: request?.user?.tenant?.id,
+      tenant_id: request?.tenant?.id,
       user_id: request?.user?.id,
       persona_id: persona_id,
       call_type_id: practiseCallType?.id, // ranked id al
@@ -285,7 +285,7 @@ const createPractiseRankedCallWithSpecifiedPersona = async ({
 const updateRolePlayCallBySession = async ({ request, session_id, data }) => {
   const updatedRolePlayCall = await dailPrisma.role_play_call.update({
     where: {
-      tenant_id: request?.user?.tenant?.id,
+      tenant_id: request?.tenant?.id,
       user_id: request?.user?.id,
       session_id: session_id,
     },
@@ -338,7 +338,7 @@ const fetchRecentRolePlayCallAll = async ({ request }) => {
   // Build where clause (keeping existing logic)
   const whereClause = {
     ...(canSeeTeamStats ? {} : { user_id: request?.user?.id }),
-    tenant_id: request?.user?.tenant?.id ?? "",
+    tenant_id: request?.tenant?.id ?? "",
     call_end_time: {
       not: null,
     },
@@ -422,7 +422,7 @@ const fetchRecentRolePlayCallAllByUser = async ({ request }) => {
   const rolePlayCall = await dailPrisma.role_play_call.groupBy({
     by: ["user_id"],
     where: {
-      tenant_id: request?.user?.tenant?.id ?? "",
+      tenant_id: request?.tenant?.id ?? "",
       call_end_time: { not: null },
       ...(canSeeTeamStats ? {} : { user_id: request?.user?.id }),
       ...(startDate &&
