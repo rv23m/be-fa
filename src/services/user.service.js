@@ -30,6 +30,7 @@ const findByEmail = async ({ email, tenantId }) => {
     where: {
       tenant_id: tenantId ?? "",
       email: email,
+      is_deleted: false,
     },
     include: {
       tenant: true,
