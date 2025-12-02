@@ -446,7 +446,7 @@ const fetchRecentRolePlayCallAllByUser = async ({ request }) => {
   const enrichedData = await Promise.all(
     rolePlayCall.map(async (item) => {
       const user = await dailPrisma.user.findUnique({
-        where: { id: item.user_id, is_deleted: false, is_frozen: false },
+        where: { id: item.user_id, is_frozen: false },
         select: {
           first_name: true,
           last_name: true,
