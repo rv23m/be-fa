@@ -12,7 +12,7 @@ model tenant {
   name            String           @unique
   slug            String           @unique
   is_deleted      Boolean?         @default(false)
-  open_api_key    String           @unique
+  // open_api_key    String           @unique
   seats           Int
   users           user[]
   personas        persona[]

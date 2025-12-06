@@ -95,21 +95,6 @@ async function routes(fastify, options) {
         adminUser: { first_name, last_name, email },
       } = request.body || {};
 
-      // TODO: under testing
-      const serviceAccountName = name + "-service";
-      const description = serviceAccountName;
-      // Step 1: Create the project
-      const project = await projectManager.createProject(name, description);
-
-      // Step 3: Create service account (which generates an API key)
-      const serviceAccount = await projectManager.createServiceAccount(
-        project.id,
-        serviceAccountName || `${name}-service-account`
-      );
-
-      console.log("###", name, serviceAccount, project, serviceAccount);
-      return;
-
       if (!name || !slug || !seats || !first_name || !last_name || !email) {
         return ResponseFormat[400]({
           reply,
@@ -121,54 +106,21 @@ async function routes(fastify, options) {
       // TODO: send email and create user and send password
       const password = Math.random().toString(36).substring(2, 10);
 
-      // const tenant = await TENANT_SERVICES.createTenant({
-      //   data: {
-      //     name,
-      //     slug,
-      //     seats,
-      //     users: {
-      //       create: {
-      //         first_name,
-      //         last_name,
-      //         email,
-      //         password: await bcrypt.hash(password, 10),
-      //         assigned_color: generateRandomHexColor(),
-      //         role_id: adminRoleId,
-      //       },
-      //     },
-      //   },
-      // });
-      const tenant = {
-        id: "67b272f6ad9d6d15abe44d75",
-      };
-      const res = await fetch(
-        "https://api.openai.com/v1/organization/api_keys",
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${fastify.config.OPENAI_API_KEY}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            name: `tenant_${tenant?.id}`,
-            scopes: ["api"],
-          }),
-        }
-      );
-
-      if (!res.ok) {
-        throw new Error("Failed to create API key: " + (await res.text()));
-      }
-
-      const data = await res.json();
-      const tenantApiKey = data.key;
-      console.log("##tenantApiKey: ", tenantApiKey);
-      await dailPrisma.tenant.update({
-        where: {
-          id: tenant?.id,
-        },
+      const tenant = await TENANT_SERVICES.createTenant({
         data: {
-          open_api_key: tenantApiKey,
+          name,
+          slug,
+          seats,
+          users: {
+            create: {
+              first_name,
+              last_name,
+              email,
+              password: await bcrypt.hash(password, 10),
+              assigned_color: generateRandomHexColor(),
+              role_id: adminRoleId,
+            },
+          },
         },
       });
 
