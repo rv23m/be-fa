@@ -424,7 +424,7 @@ const fetchRecentRolePlayCallAllByUser = async ({ request }) => {
     where: {
       tenant_id: request?.tenant?.id ?? "",
       call_end_time: { not: null },
-      ...(canSeeTeamStats ? {} : { user_id: request?.user?.id }),
+      // ...(canSeeTeamStats ? {} : { user_id: request?.user?.id }),
       ...(startDate &&
         endDate && {
           created_at: {
