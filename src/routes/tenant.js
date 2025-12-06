@@ -1,7 +1,10 @@
 import { dailPrisma } from "../plugins/prisma.js";
 import { EMAIL_SERVICE } from "../services/email.service.js";
 import TENANT_SERVICES from "../services/tenant.service.js";
-import { generateRandomHexColor } from "../utils/generateRandomHexColor.js";
+import {
+  generateRandomHexColor,
+  generateUserColors,
+} from "../utils/generateRandomHexColor.js";
 import ResponseFormat from "../utils/response_format.js";
 import bcrypt from "bcrypt";
 import OpenAI from "openai";
@@ -117,7 +120,7 @@ async function routes(fastify, options) {
               last_name,
               email,
               password: await bcrypt.hash(password, 10),
-              assigned_color: generateRandomHexColor(),
+              assigned_color: generateUserColors[0],
               role_id: adminRoleId,
             },
           },

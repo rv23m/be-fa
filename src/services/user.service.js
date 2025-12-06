@@ -1,7 +1,10 @@
 import { dailPrisma } from "../plugins/prisma.js";
 import bcrypt from "bcrypt";
 import ResponseFormat from "../utils/response_format.js";
-import { generateRandomHexColor } from "../utils/generateRandomHexColor.js";
+import {
+  generateRandomHexColor,
+  generateUserColors,
+} from "../utils/generateRandomHexColor.js";
 
 const usersForStatsCallLogFilter = async ({ request }) => {
   const canSeeTeamStats = request?.user?.role?.canSeeTeamStats;
@@ -153,13 +156,22 @@ const createNewUser = async ({
     return existingUser;
   }
 
+  const lastColorUser = await dailPrisma.user.findFirst({
+    orderBy: [{ created_at: "desc" }],
+  });
+  const targetIndex = generateUserColors?.find((e) => e === lastColorUser);
+  const decidedColor =
+    targetIndex === -1
+      ? generateUserColors[0]
+      : generateUserColors[targetIndex + 1];
+
   const users = await dailPrisma.user.create({
     data: {
       first_name,
       last_name,
       email,
       password: await bcrypt.hash(password, 10),
-      assigned_color: generateRandomHexColor(),
+      assigned_color: decidedColor,
       role: {
         connect: { id: roleId },
       },
