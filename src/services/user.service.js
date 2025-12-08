@@ -5,6 +5,7 @@ import {
   generateRandomHexColor,
   generateUserColors,
 } from "../utils/generateRandomHexColor.js";
+import fastify from "fastify";
 
 const usersForStatsCallLogFilter = async ({ request }) => {
   const canSeeTeamStats = request?.user?.role?.canSeeTeamStats;
@@ -159,11 +160,13 @@ const createNewUser = async ({
   const lastColorUser = await dailPrisma.user.findFirst({
     orderBy: [{ created_at: "desc" }],
   });
-  const targetIndex = generateUserColors?.find((e) => e === lastColorUser);
+  const targetIndex = generateUserColors?.findIndex(
+    (e) => e === lastColorUser.assigned_color
+  );
   const decidedColor =
     targetIndex === -1
       ? generateUserColors[0]
-      : generateUserColors[targetIndex + 1];
+      : generateUserColors[(targetIndex + 1) % generateUserColors.length];
 
   const users = await dailPrisma.user.create({
     data: {
