@@ -29,6 +29,9 @@ const createPersona = async ({ request, name, job, industry, objection }) => {
           id: request?.tenant?.id,
         },
       },
+      job: job,
+      industry: industry,
+      objection: objection,
     },
   });
 
