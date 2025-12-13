@@ -33,10 +33,19 @@ const generateSystemPrompt = (
   );
 };
 
-const generateNames = () => {
-  const randomIndex = Math.floor(Math.random() * CHARACTER_NAMES.length);
+const generateNames = ({ preExistingNames = [] }) => {
+  const finalArrayWithoutDuplicates = CHARACTER_NAMES.filter(
+    (e) => !preExistingNames?.includes(e)
+  );
 
-  return CHARACTER_NAMES[randomIndex];
+  const randomIndex = Math.floor(
+    Math.random() * finalArrayWithoutDuplicates.length
+  );
+
+  return finalArrayWithoutDuplicates[randomIndex];
+  // const randomIndex = Math.floor(Math.random() * CHARACTER_NAMES.length);
+
+  // return CHARACTER_NAMES[randomIndex];
 };
 
 const generateMood = () => {

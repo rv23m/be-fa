@@ -38,10 +38,14 @@ async function routes(fastify, options) {
       });
     }
 
+    const personas = await PERSONA_SERVICE.getAllPersona({ request });
+
     // Fetch user from DB
     const persona = await PERSONA_SERVICE.createPersona({
       request,
-      name: PERSONA_UTIL.generateNames(),
+      name: PERSONA_UTIL.generateNames({
+        preExistingNames: personas?.map((e) => e.name),
+      }),
       job,
       industry,
       objection,
