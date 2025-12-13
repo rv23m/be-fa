@@ -26,9 +26,9 @@ const getPreExistingCallOfCallType = async ({ request, call_type_id }) => {
         select: {
           name: true,
           prompt: true,
-          // job: true,
-          // objection: true,
-          // industry: true,
+          job: true,
+          objection: true,
+          industry: true,
         },
       },
     },
