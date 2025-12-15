@@ -123,7 +123,7 @@ const sendUserLoginEmail = async (email, metaInfoUser, oneTimePassword) => {
 
   // Setup email data
   const mailOptions = {
-    from: '"No Reply" <no-reply@dail.ai>',
+    from: "Dail@hellodail.com",
     to: email,
     subject: "Let's begin your journey!",
     text: `Your account has been created.`,
@@ -244,7 +244,7 @@ const sendPasswordResetEmail = async (email, metaInfoUser, resetToken) => {
 
   // Setup email data
   const mailOptions = {
-    from: '"No Reply" <no-reply@dail.ai>',
+    from: "Dail@hellodail.com",
     to: email,
     subject: "Reset your password",
     text: `Click the link to reset your password: ${resetUrl}`,
