@@ -156,6 +156,10 @@ model role_play_call {
   listen_to_talk_ratio Float? // %
   objection_resolution Float? // %
   close_rate           Boolean? // true = closed, false = not closed
+  personaSpokenWords   Float?
+  userSpokenWords      Float?
+  objectionsResolved   Float?
+  totalObjections      Float?
 
   transcript Json? @default("[]")
 
