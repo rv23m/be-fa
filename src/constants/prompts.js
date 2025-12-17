@@ -85,16 +85,24 @@ Do **NOT delete or reorder any line**. Preserve punctuation and speaker names ex
 - Keep the dialogue structure clear and easy to read.
 
 ### STEP 2 — Highlighting Rules
-Go through each line and apply the following markup tags:
-- If ${personaName} expresses a **concern, hesitation, or objection** (e.g. mentions "concern", "budget", "risk", "disruption", "unsure", etc.), wrap that phrase or sentence with:  
-  \`[OBJECTION] ... [/OBJECTION]\`  
-  (This will be styled pink later.)
-- If ${username} provides an **answer, reassurance, or solution** to an objection, wrap that sentence with:  
-  \`[RESOLUTION] ... [/RESOLUTION]\`  
-  (This will be styled green later.)
-- If ${username} asks a **qualifying or discovery question** (e.g. starts with "How", "What", "Would you", "Can you", "Do you"), wrap the question with:  
-  \`[QUESTION] ... [/QUESTION]\`  
-  (This will be styled blue later.)
+
+Go through each line and apply the following markup tags.  
+**Always identify the speaker first before applying any tag.**
+
+- If the speaker is **${personaName}**, you may apply **ONLY** the following:
+  - If ${personaName} expresses a **concern, hesitation, doubt, resistance, or objection** (including risks, budget concerns, uncertainty, or disruption), **even if phrased as a question**, wrap the phrase or sentence with:  
+    \`[OBJECTION] ... [/OBJECTION]\`  
+  - **Do NOT** apply \`[QUESTION]\` or \`[RESOLUTION]\` to any line spoken by ${personaName}.
+
+- If the speaker is **${username}**, you may apply the following:
+  - If ${username} asks a **qualifying or discovery question** (e.g. starts with “How”, “What”, “Would you”, “Can you”, “Do you”), wrap the question with:  
+    \`[QUESTION] ... [/QUESTION]\`
+  - If ${username} provides an **answer, reassurance, mitigation, or solution** to an objection, wrap the sentence with:  
+    \`[RESOLUTION] ... [/RESOLUTION]\`
+
+**Important constraints:**
+- A line must **never** be tagged as \`[QUESTION]\` unless it is spoken by **${username}**.
+- Any question asked by **${personaName}** must be treated as an \`[OBJECTION]\`, not a \`[QUESTION]\`.
 
 ---
 
@@ -189,6 +197,78 @@ export const PRACTISE_CALL_SUMMARIZE_PROMPTV1 = ({
       \`\`\`
       `;
 };
+// export const PRACTISE_CALL_SUMMARIZE_PROMPT = ({
+//   username,
+//   personaName,
+//   formattedTranscript,
+// }) => {
+//   return `
+// You are an expert sales call analyst.
+
+// Below is a sales call transcript between **${username}** (the salesperson) and **${personaName}** (the potential customer).
+
+// Do **NOT** remove or reorder lines. Follow the instructions carefully.
+
+// ---
+
+// ### STEP 1 — Talk Ratio
+// Estimate how much each person spoke:
+// - Count approximate total **words** spoken by each speaker.
+// - Return the ratio as "<${personaName}%>/(<${personaName}%> + <${username}%>)".
+
+// ---
+
+// ### STEP 2 — Objection and Resolution Logic
+// Carefully identify **objections** and **resolutions** using these strict rules:
+
+// #### A. Objection Definition
+// An *objection* occurs when **${personaName}** expresses:
+// - hesitation, concern, fear, or resistance (e.g. "concerns", "budget", "risk", "disruptions", "not sure")
+// - requests clarification or expresses doubt about benefits, cost, or fit.
+
+// #### B. Resolution Definition
+// A *resolution* counts **only** if **${username}**:
+// - directly addresses the *same concern* raised by ${personaName}, **AND**
+// - provides a *clear reassurance, solution, measurable claim, or next step* related to it.
+
+// If ${username} merely *acknowledges, jokes, changes the topic, or restates the objection*, it **does not count** as resolved.
+
+// #### C. Calculation
+// Compute the **objection resolution percentage** as:
+// \`\`\`
+// (number of objections that were fully resolved / total number of objections) * 100
+// \`\`\`
+// Round to the nearest whole number.
+
+// If **no objections** are detected, return "0%".
+
+// ---
+
+// ### STEP 3 — Call Outcome
+// Based on ${personaName}'s final statements:
+// - If they remain doubtful or raise unresolved concerns → "NO"
+// - If they sound convinced or ready to move forward → "YES"
+
+// ---
+
+// ### STEP 4 — Output JSON
+// Return only valid JSON (no markdown or comments):
+
+// \`\`\`json
+// {
+//   "listen_vs_talk_percentage": "<number/number>",
+//   "objection_resolution_percentage": "<number>%",
+//   "call_booked": "YES" or "NO"
+// }
+// \`\`\`
+
+// ---
+
+// ### TRANSCRIPT:
+// ${formattedTranscript}
+// `;
+// };
+
 export const PRACTISE_CALL_SUMMARIZE_PROMPT = ({
   username,
   personaName,
@@ -205,8 +285,8 @@ Do **NOT** remove or reorder lines. Follow the instructions carefully.
 
 ### STEP 1 — Talk Ratio
 Estimate how much each person spoke:
-- Count approximate total **words** spoken by each speaker.
-- Return the ratio as "<${personaName}%>/(<${personaName}%> + <${username}%>)".
+- Count approximate total **words** spoken by ${personaName} return as personaSpokenWords.
+- Count approximate total **words** spoken by ${username} return as userSpokenWords.
 
 ---
 
@@ -215,7 +295,7 @@ Carefully identify **objections** and **resolutions** using these strict rules:
 
 #### A. Objection Definition
 An *objection* occurs when **${personaName}** expresses:
-- hesitation, concern, fear, or resistance (e.g. “concerns”, “budget”, “risk”, “disruptions”, “not sure”)
+- hesitation, concern, fear, or resistance (e.g. "concerns", "budget", "risk", "disruptions", "not sure")
 - requests clarification or expresses doubt about benefits, cost, or fit.
 
 #### B. Resolution Definition
@@ -226,9 +306,12 @@ A *resolution* counts **only** if **${username}**:
 If ${username} merely *acknowledges, jokes, changes the topic, or restates the objection*, it **does not count** as resolved.
 
 #### C. Calculation
-Compute the **objection resolution percentage** as:
+Compute the **objection resolution** as:
 \`\`\`
-(number of objections that were fully resolved / total number of objections) * 100
+number of objections that were fully resolved as objectionsResolved
+\`\`\`
+\`\`\`
+total number of objections as totalObjections
 \`\`\`
 Round to the nearest whole number.
 
@@ -237,7 +320,7 @@ If **no objections** are detected, return "0%".
 ---
 
 ### STEP 3 — Call Outcome
-Based on ${personaName}’s final statements:
+Based on ${personaName}'s final statements:
 - If they remain doubtful or raise unresolved concerns → "NO"
 - If they sound convinced or ready to move forward → "YES"
 
@@ -248,8 +331,10 @@ Return only valid JSON (no markdown or comments):
 
 \`\`\`json
 {
-  "listen_vs_talk_percentage": "<number/number>",
-  "objection_resolution_percentage": "<number>%",
+  "personaSpokenWords": "<number>",
+  "userSpokenWords": "<number>",
+  "objectionsResolved": "<number>",
+  "totalObjections": "<number>",
   "call_booked": "YES" or "NO"
 }
 \`\`\`

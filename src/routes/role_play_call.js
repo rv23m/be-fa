@@ -580,20 +580,29 @@ async function routes(fastify, options) {
               request,
               session_id: id,
               data: {
-                ...(isCallRanked
-                  ? {
-                      cleaned_transcript:
-                        formattedResponse?.formatted_transcript,
-                    }
-                  : {
-                      cleaned_transcript:
-                        formattedResponse?.formatted_transcript,
-                    }),
-                listen_to_talk_ratio: parseFloat(
-                  formattedResponse?.listen_vs_talk_percentage
+                // ...(isCallRanked
+                //   ? {
+                //       cleaned_transcript:
+                //         formattedResponse?.formatted_transcript,
+                //     }
+                //   : {
+                //       cleaned_transcript:
+                //         formattedResponse?.formatted_transcript,
+                //     }),
+                personaSpokenWords: formattedResponse?.personaSpokenWords,
+                userSpokenWords: formattedResponse?.userSpokenWords,
+                objectionsResolved: formattedResponse?.objectionsResolved,
+                totalObjections: formattedResponse?.totalObjections,
+                listen_to_talk_ratio: parseInt(
+                  (formattedResponse?.personaSpokenWords /
+                    ((formattedResponse?.personaSpokenWords ?? 1) +
+                      (formattedResponse?.userSpokenWords ?? 0))) *
+                    100
                 ),
-                objection_resolution: parseFloat(
-                  formattedResponse?.objection_resolution_percentage
+                objection_resolution: parseInt(
+                  (formattedResponse?.objectionsResolved /
+                    (formattedResponse?.totalObjections ?? 1)) *
+                    100
                 ),
                 close_rate: formattedResponse?.call_booked === "YES",
               },
