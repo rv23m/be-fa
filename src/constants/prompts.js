@@ -35,7 +35,7 @@ export const TRANSCRIPT_CALL_SUMMARIZE_PROMPTV1 = ({
     \`\`\`
     `;
 };
-export const TRANSCRIPT_CALL_SUMMARIZE_PROMPT = ({
+export const TRANSCRIPT_CALL_SUMMARIZE_PROMPTV2 = ({
   username,
   personaName,
   formattedTranscript,
@@ -91,6 +91,94 @@ Go through each line and apply the following markup tags.
 
 - If the speaker is **${personaName}**, you may apply **ONLY** the following:
   - If ${personaName} expresses a **concern, hesitation, doubt, resistance, or objection** (including risks, budget concerns, uncertainty, or disruption), **even if phrased as a question**, wrap the phrase or sentence with:  
+    \`[OBJECTION] ... [/OBJECTION]\`  
+  - **Do NOT** apply \`[QUESTION]\` or \`[RESOLUTION]\` to any line spoken by ${personaName}.
+
+- If the speaker is **${username}**, you may apply the following:
+  - If ${username} asks a **qualifying or discovery question** (e.g. starts with “How”, “What”, “Would you”, “Can you”, “Do you”), wrap the question with:  
+    \`[QUESTION] ... [/QUESTION]\`
+  - If ${username} provides an **answer, reassurance, mitigation, or solution** to an objection, wrap the sentence with:  
+    \`[RESOLUTION] ... [/RESOLUTION]\`
+
+**Important constraints:**
+- A line must **never** be tagged as \`[QUESTION]\` unless it is spoken by **${username}**.
+- Any question asked by **${personaName}** must be treated as an \`[OBJECTION]\`, not a \`[QUESTION]\`.
+
+---
+
+### STEP 3 — Output Format
+Return **only** valid JSON as shown below.  
+Do NOT include any explanation, extra text, or markdown formatting outside the JSON.
+
+\`\`\`json
+{
+  "formatted_transcript": "<The fully formatted transcript with markdown and highlight tags>"
+}
+\`\`\`
+
+---
+
+### TRANSCRIPT TO PROCESS:
+${formattedTranscript}
+`;
+};
+
+export const TRANSCRIPT_CALL_SUMMARIZE_PROMPT = ({
+  username,
+  personaName,
+  formattedTranscript,
+}) => {
+  /**
+   * keep the percentage more accurate like 8%, 18%, and like that not just 89% like that choose all numbers so that average is not close to 50% immediately i want atleast 1 user to get 100 calls before hitting 50% average.
+   *
+   * instead of asking AI to judge the context
+   * - ask ai in a strict questions
+   * - for example : ask ai for Probability(listen) (try in units of number of words)
+   * - for example : ask ai for Probability(talk)
+   * - for example : ask ai for Probability(objections) {questions asked by ai}
+   * - for example : ask ai for Probability(resolutions) {number of answers provided to those question on a satisfaction level of 5 on a scale of 0-5}
+   */
+  // return `
+  //   Below is a sales call transcript. Follow these steps:
+  //   DO NOT DELETE ANY TRANSCRIPT LINE
+
+  //   **STEP 1:** Format the transcript with markdown. Make **${username}** and **${personaName}** names bold.
+
+  //   **STEP 2:** Highlight key parts:
+  //   - **Objections** should be marked as \`[OBJECTION] ... [/OBJECTION]\` (styled pink).
+  //   - **Resolutions** should be marked as \`[RESOLUTION] ... [/RESOLUTION]\` (styled green).
+  //   - **Qualifying Questions** from ${username} should be marked as \`[QUESTION] ... [/QUESTION]\` (styled blue).
+
+  //   **Transcript:**
+  //   ${formattedTranscript}
+
+  //   **Return JSON Output:**
+  //   \`\`\`json
+  //   {
+  //     "formatted_transcript": "<The transcript with markdown and highlights>",
+  //   }
+  //   \`\`\`
+  //   `;
+
+  return `
+You are an expert sales conversation analyst.
+
+Your task is to process the following **sales call transcript** step-by-step.  
+Do **NOT delete or reorder any line**. Preserve punctuation and speaker names exactly as they appear.
+
+---
+
+### STEP 1 — Markdown Formatting
+- Make **${username}** and **${personaName}** names bold wherever they appear as speakers.
+- Keep the dialogue structure clear and easy to read.
+
+### STEP 2 — Highlighting Rules
+
+Go through each line and apply the following markup tags.  
+**Always identify the speaker first before applying any tag.**
+
+- If the speaker is **${personaName}**, you may apply **ONLY** the following:
+  - If ${personaName} expresses a **concern, hesitation, doubt, resistance, or objection** (including risks, budget concerns, uncertainty, or disruption), wrap the phrase or sentence with:  
     \`[OBJECTION] ... [/OBJECTION]\`  
   - **Do NOT** apply \`[QUESTION]\` or \`[RESOLUTION]\` to any line spoken by ${personaName}.
 
