@@ -442,24 +442,28 @@ const fetchRecentRolePlayCallAllByUser = async ({ request }) => {
     },
   });
 
-  const enrichedData = await Promise.all(
-    rolePlayCall.map(async (item) => {
-      const user = await dailPrisma.user.findUnique({
-        where: { id: item.user_id, is_frozen: false },
-        select: {
-          first_name: true,
-          last_name: true,
-          id: true,
-          email: true,
-          assigned_color: true,
-        },
-      });
+  const enrichedData = (
+    await Promise.all(
+      rolePlayCall.map(async (item) => {
+        const user = await dailPrisma.user.findUnique({
+          where: { id: item.user_id, is_frozen: false },
+          select: {
+            first_name: true,
+            last_name: true,
+            id: true,
+            email: true,
+            assigned_color: true,
+          },
+        });
 
-      return {
-        ...item,
-        user,
-      };
-    })
+        return {
+          ...item,
+          user,
+        };
+      })
+    )
+  )?.sort((a, b) =>
+    (a.user.last_name ?? "").localeCompare(b.user.last_name ?? "")
   );
 
   return enrichedData;
