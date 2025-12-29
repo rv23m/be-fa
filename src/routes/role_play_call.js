@@ -661,6 +661,16 @@ async function routes(fastify, options) {
 
         await (async () => {
           const transcript = rolePlayCall?.transcript;
+          if (!transcript) {
+            await ROLE_PLAY_CALL_SERVICES.updateRolePlayCallBySession({
+              request,
+              session_id: id,
+              data: {
+                cleaned_transcript: " ",
+              },
+            });
+            return;
+          }
           const username = `${request?.user?.first_name} ${request?.user?.last_name}`;
           const personaName =
             rolePlayCall?.persona?.name ??
