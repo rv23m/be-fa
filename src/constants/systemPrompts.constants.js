@@ -264,7 +264,7 @@ ${ObjectionType}
 
 `;
 
-export const GPT_MOODS = [
+export const GPT_MOODS_v1 = [
   "a little calm",
   "slightly curious",
   "somewhat friendly",
@@ -358,6 +358,14 @@ export const GPT_MOODS = [
   "somewhat mellow",
   "a bit realistic",
   "a little neutral",
+];
+
+export const GPT_MOODS = [
+  "curious",
+  "annoyed",
+  "skeptical",
+  "distracted",
+  "busy",
 ];
 
 export const CHARACTER_NAMES = [
