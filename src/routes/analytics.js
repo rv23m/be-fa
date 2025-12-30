@@ -1,5 +1,8 @@
 import ResponseFormat from "../utils/response_format.js";
 import ANALYTICS_SERVICE from "../services/analytics.service.js";
+import { createRequire } from 'module';
+
+const require = createRequire(import.meta.url);
 
 const ROUTE_LEVEL_IDENTIFIER = "analytics";
 
